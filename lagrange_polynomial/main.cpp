@@ -1,4 +1,3 @@
-#include <bits/ranges_algo.h>
 #include <fmt/printf.h>
 
 #include <algorithm>
@@ -8,7 +7,6 @@
 #include <iostream>
 #include <numeric>
 #include <ranges>
-#include <sciplot/sciplot.hpp>
 #include <span>
 #include <thread>
 #include <vector>
