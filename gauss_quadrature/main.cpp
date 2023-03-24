@@ -2,89 +2,84 @@
 
 #include <array>
 #include <cassert>
+#include <concepts>
 #include <functional>
 #include <numbers>
 #include <vector>
 
 namespace gauss_quadrature {
 
-using RealFunction = std::function<double(double)>;
+template <std::floating_point T>
+using RealFunction = std::function<T(T)>;
 
+template <std::floating_point T>
 struct Integral {
-  double low_{};
-  double high_{};
-  RealFunction function_{};
+  T low_{};
+  T high_{};
+  RealFunction<T> function_{};
 };
 
-auto compose(RealFunction a, RealFunction b) -> RealFunction {
-  return [a = std::move(a), b = std::move(b)](double x) { return a(b(x)); };
+template <std::floating_point T>
+auto compose(RealFunction<T> a, RealFunction<T> b) -> RealFunction<T> {
+  return [a = std::move(a), b = std::move(b)](T x) { return a(b(x)); };
 }
 
-auto multiply(RealFunction a, RealFunction b) -> RealFunction {
-  return [a = std::move(a), b = std::move(b)](double x) { return a(x) * b(x); };
+template <std::floating_point T>
+auto multiply(RealFunction<T> a, RealFunction<T> b) -> RealFunction<T> {
+  return [a = std::move(a), b = std::move(b)](T x) { return a(x) * b(x); };
 }
 
 // transform integration bounds from [a, b] to [new_low, new_high]
-auto transformIntegrationBounds(Integral integral, double new_low, double new_high) -> RealFunction {
+template <std::floating_point T>
+auto transformIntegrationBounds(Integral<T> integral, T new_low, T new_high) -> RealFunction<T> {
   auto c_0 = (integral.high_ - integral.low_) / (new_high - new_low);
   auto c_1 = integral.low_ - new_low * c_0;
 
-  auto g = [a = integral.low_, b = integral.high_, c_0, c_1](double x) { return c_0 * x + c_1; };
+  auto g = [a = integral.low_, b = integral.high_, c_0, c_1](T x) { return c_0 * x + c_1; };
 
-  auto dgdx = [c_0](double) { return c_0; };
+  auto dgdx = [c_0](T) { return c_0; };
 
-  return multiply(compose(std::move(integral.function_), g), dgdx);
+  return multiply<T>(compose<T>(std::move(integral.function_), g), dgdx);
 }
 
-template <std::size_t N>
-using Params = std::array<double, N>;
+template <std::floating_point T, std::size_t N>
+using Params = std::array<T, N>;
 
-struct Pair {
-  double w_;
-  double x_;
+template <std::floating_point T>
+struct WeightArgument {
+  T x_;
+  T w_;
 };
 
-auto getParams(std::size_t i) -> Pair {
-  constexpr static std::size_t kN = 10;
-  assert(i < kN);
+template <std::floating_point T>
+consteval auto generateParams() {
+  constexpr std::size_t kN = 10;
 
-  constexpr static auto kWeights = Params<kN>{
-      0.0666713,
-      0.149451,
-      0.219086,
-      0.269267,
-      0.295524,
-      0.295524,
-      0.269267,
-      0.219086,
-      0.149451,
-      0.0666713,
-  };
+  std::array<WeightArgument<T>, kN> results{{
+      {-0.973906528517171720078, 0.0666713443086881375936},
+      {-0.8650633666889845107321, 0.149451349150580593146},
+      {-0.6794095682990244062343, 0.219086362515982043996},
+      {-0.4333953941292471907993, 0.2692667193099963550912},
+      {-0.1488743389816312108848, 0.2955242247147528701739},
+      {0.1488743389816312108848, 0.295524224714752870174},
+      {0.4333953941292471907993, 0.269266719309996355091},
+      {0.6794095682990244062343, 0.2190863625159820439955},
+      {0.8650633666889845107321, 0.1494513491505805931458},
+      {0.973906528517171720078, 0.0666713443086881375936},
+  }};
 
-  constexpr static auto kArguments = Params<kN>{
-      -0.973907,
-      -0.865063,
-      -0.679410,
-      -0.433395,
-      -0.148874,
-      0.148874,
-      0.433395,
-      0.679410,
-      0.865063,
-      0.973907,
-  };
-
-  return {kWeights[i], kArguments[i]};
+  return results;
 }
 
-auto gaussQuadrature(Integral integral) -> double {
-  constexpr std::size_t kN = 10;
+template <std::floating_point T>
+auto gaussQuadrature(Integral<T> integral) -> T {
+  constexpr auto kParams = generateParams<T>();
+
   auto result = 0.0;
 
-  auto new_integral = transformIntegrationBounds(std::move(integral), -1, 1);
+  auto new_integral = transformIntegrationBounds<T>(std::move(integral), -1, 1);
 
-  for (auto i = 0; i < 10; ++i) {
-    const auto [w, x] = getParams(i);
+  for (const auto [x, w] : kParams) {
     result += w * new_integral(x);
   }
 
@@ -93,14 +88,23 @@ auto gaussQuadrature(Integral integral) -> double {
 
 }  // namespace gauss_quadrature
 
-auto cmp(double a, double b, double epsilon = 1e-6) -> bool { return std::abs(a - b) < epsilon; }
+template <std::floating_point T>
+auto abs(T x) -> T {
+  return x < 0 ? -x : x;
+}
+
+template <std::floating_point T>
+auto cmp(T a, T b, T epsilon = 1e-6) -> bool {
+  return abs(a - b) < epsilon;
+}
 
 auto main() -> int {
-  auto square_integral = gauss_quadrature::Integral{-2, 1, [](double x) { return x * x; }};
+  auto square_integral = gauss_quadrature::Integral<double>{-2, 1, [](double x) { return x * x; }};
   auto square_result = gauss_quadrature::gaussQuadrature(square_integral);
   fmt::print("square = {}\n", square_result);
 
-  auto sine_integral = gauss_quadrature::Integral{0, 2 * std::numbers::pi, [](double x) { return std::sin(x); }};
+  auto sine_integral =
+      gauss_quadrature::Integral<double>{0, std::numbers::pi / 2, [](double x) { return std::sin(x); }};
   auto sine_result = gauss_quadrature::gaussQuadrature(sine_integral);
   fmt::print("sine = {}\n", sine_result);
 }
