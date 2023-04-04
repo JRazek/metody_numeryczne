@@ -35,7 +35,7 @@ auto transformIntegrationBounds(Integral<T> integral, T new_low, T new_high) -> 
   auto c_0 = (integral.high_ - integral.low_) / (new_high - new_low);
   auto c_1 = integral.low_ - new_low * c_0;
 
-  auto g = [a = integral.low_, b = integral.high_, c_0, c_1](T x) { return c_0 * x + c_1; };
+  auto g = [c_0, c_1](T x) { return c_0 * x + c_1; };
 
   auto dgdx = [c_0](T) { return c_0; };
 
@@ -96,15 +96,4 @@ auto abs(T x) -> T {
 template <std::floating_point T>
 auto cmp(T a, T b, T epsilon = 1e-6) -> bool {
   return abs(a - b) < epsilon;
-}
-
-auto main() -> int {
-  auto square_integral = gauss_quadrature::Integral<double>{-2, 1, [](double x) { return x * x; }};
-  auto square_result = gauss_quadrature::gaussQuadrature(square_integral);
-  fmt::print("square = {}\n", square_result);
-
-  auto sine_integral =
-      gauss_quadrature::Integral<double>{0, std::numbers::pi / 2, [](double x) { return std::sin(x); }};
-  auto sine_result = gauss_quadrature::gaussQuadrature(sine_integral);
-  fmt::print("sine = {}\n", sine_result);
 }

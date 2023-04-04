@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <fmt/format.h>
 #include <fmt/printf.h>
 
@@ -16,7 +17,7 @@ namespace utils {
 using ld = long double;
 using Container = std::vector<ld>;
 
-auto readDataset(std::string const& path) -> Container {
+inline auto readDataset(std::string const& path) -> Container {
   std::fstream file(fmt::format("{}/{}", "data", path));
   if (file.fail()) {
     throw std::runtime_error("Failed to open file");
@@ -74,12 +75,12 @@ struct Measurement {
   }
 };
 
-auto calculateMean(Container const& measurements) -> ld {
+inline auto calculateMean(Container const& measurements) -> ld {
   auto res = std::reduce(measurements.begin(), measurements.end());
   return res / measurements.size();
 }
 
-auto calculateVariance(Container const& measurements, ld mean) -> ld {
+inline auto calculateVariance(Container const& measurements, ld mean) -> ld {
   assert(measurements.size() > 1);
   auto res = std::transform_reduce(measurements.begin(), measurements.end(), ld{}, std::plus<>{}, [mean](auto const x) {
     return std::pow(x - mean, 2);
@@ -87,13 +88,13 @@ auto calculateVariance(Container const& measurements, ld mean) -> ld {
   return res / (measurements.size() - 1);
 }
 
-auto calculateStdUncertaintyOfMeanSq(ld variance, std::uint64_t n) -> ld { return variance / n; }
+inline auto calculateStdUncertaintyOfMeanSq(ld variance, std::uint64_t n) -> ld { return variance / n; }
 
-auto calcualteGeneralizedUncertaintySq(ld std_uncertainty_of_mean_sq, ld uncertainty_of_device) -> ld {
+inline auto calcualteGeneralizedUncertaintySq(ld std_uncertainty_of_mean_sq, ld uncertainty_of_device) -> ld {
   return std_uncertainty_of_mean_sq + std::pow(uncertainty_of_device, 2) / 3;
 }
 
-auto setupMeasurement(Container const& measurements, ld uncertainty_of_device) -> Measurement {
+inline auto setupMeasurement(Container const& measurements, ld uncertainty_of_device) -> Measurement {
   auto mean = calculateMean(measurements);
   auto variance = calculateVariance(measurements, mean);
   auto std_uncertainty_of_mean_sq = calculateStdUncertaintyOfMeanSq(variance, measurements.size());
@@ -149,36 +150,71 @@ struct fmt::formatter<uncertainty::Quantity> {
 
   template <typename FormatContext>
   auto format(uncertainty::Quantity const& quantity, FormatContext& ctx) {
-    return format_to(
-        ctx.out(), "value: {:f}, generalized uncertainty: {:f}", quantity.value_, std::sqrt(quantity.uncertainty_sq_));
+    return format_to(ctx.out(), "value: {:.3} \\pm {:.3}", quantity.value_, std::sqrt(quantity.uncertainty_sq_));
   }
 };
 
-auto main() -> int {  // NOLINT
-  using uncertainty::combineMeasurements;
-  using uncertainty::Measurement;
-  using uncertainty::partialDerivative;
-  using uncertainty::Quantity;
-  using uncertainty::setupMeasurement;
-  using utils::ld;
-
-  auto a = static_cast<Quantity>(setupMeasurement(utils::readDataset("a.txt"), 0.01));
-  auto d = static_cast<Quantity>(setupMeasurement(utils::readDataset("d.txt"), 0.00002));
-
-  auto h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("h1.txt"), 0.01));
-  auto l1 = combineMeasurements([](ld a, ld h, ld d) { return a - h - d; }, a, h1, d);
-  auto tx1h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x1h1.txt"), 0.01));
-  auto tx2h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x2h1.txt"), 0.01));
-  auto tx5h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x5h1.txt"), 0.01));
-  auto tx10h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x10h1.txt"), 0.01));
-
-  fmt::print("a: {}\n", a);
-  fmt::print("d: {}\n\n", d);
-
-  fmt::print("h1: {}\n", h1);
-  fmt::print("l1: {}\n", l1);
-  fmt::print("tx1h1: {}\n", tx1h1);
-  fmt::print("tx2h1: {}\n", tx2h1);
-  fmt::print("tx5h1: {}\n", tx5h1);
-  fmt::print("tx10h1: {}\n", tx10h1);
-}
+//auto main() -> int {  // NOLINT
+//  using uncertainty::combineMeasurements;
+//  using uncertainty::Measurement;
+//  using uncertainty::partialDerivative;
+//  using uncertainty::Quantity;
+//  using uncertainty::setupMeasurement;
+//  using utils::ld;
+//
+//  auto a = static_cast<Quantity>(setupMeasurement(utils::readDataset("a.txt"), 0.01));
+//  auto d = static_cast<Quantity>(setupMeasurement(utils::readDataset("d.txt"), 0.00002));
+//
+//  auto h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("h1.txt"), 0.01));
+//  auto l1 = combineMeasurements([](ld a, ld h, ld d) { return a - h - d; }, a, h1, d);
+//  auto tx1h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x1h1.txt"), 0.01));
+//  auto tx2h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x2h1.txt"), 0.01));
+//  auto tx5h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x5h1.txt"), 0.01));
+//  auto tx10h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x10h1.txt"), 0.01));
+//
+//  auto h2 = static_cast<Quantity>(setupMeasurement(utils::readDataset("h2.txt"), 0.01));
+//  auto l2 = combineMeasurements([](ld a, ld h, ld d) { return a - h - d; }, a, h2, d);
+//  auto tx10h2 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x10h2.txt"), 0.01));
+//
+//  auto h3 = static_cast<Quantity>(setupMeasurement(utils::readDataset("h3.txt"), 0.01));
+//  auto l3 = combineMeasurements([](ld a, ld h, ld d) { return a - h - d; }, a, h3, d);
+//  auto tx10h3 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x10h3.txt"), 0.01));
+//
+//  auto h4 = static_cast<Quantity>(setupMeasurement(utils::readDataset("h4.txt"), 0.01));
+//  auto l4 = combineMeasurements([](ld a, ld h, ld d) { return a - h - d; }, a, h4, d);
+//  auto tx10h4 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x10h4.txt"), 0.01));
+//
+//  auto h5 = static_cast<Quantity>(setupMeasurement(utils::readDataset("h5.txt"), 0.01));
+//  auto l5 = combineMeasurements([](ld a, ld h, ld d) { return a - h - d; }, a, h5, d);
+//  auto tx10h5 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x10h5.txt"), 0.01));
+//
+//  //  fmt::print("h1: {}\n", h1);
+//  //  fmt::print("tx10h1: {}\n\n", tx10h1);
+//  //
+//  //  fmt::print("h2: {}\n", h2);
+//  //  fmt::print("tx10h2: {}\n\n", tx10h2);
+//  //
+//  //  fmt::print("h3: {}\n", h3);
+//  //  fmt::print("tx10h3: {}\n\n", tx10h3);
+//  //
+//  //  fmt::print("h4: {}\n", h4);
+//  //  fmt::print("tx10h4: {}\n\n", tx10h4);
+//  //
+//  //  fmt::print("h5: {}\n", h5);
+//  //  fmt::print("tx10h5: {}\n\n", tx10h5);
+//
+//  fmt::print("h1: {}\n", h1);
+//  fmt::print("l1: {}\n\n", l1);
+//
+//  fmt::print("h2: {}\n", h2);
+//  fmt::print("l2: {}\n\n", l2);
+//
+//  fmt::print("h3: {}\n", h3);
+//  fmt::print("l3: {}\n\n", l3);
+//
+//  fmt::print("h4: {}\n", h4);
+//  fmt::print("l4: {}\n\n", l4);
+//
+//  fmt::print("h5: {}\n", h5);
+//  fmt::print("l5: {}\n\n", l5);
+//}
