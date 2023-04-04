@@ -1,4 +1,5 @@
-#include <fmt/core.h>
+#include <fmt/format.h>
+#include <fmt/printf.h>
 
 #include <algorithm>
 #include <cmath>
@@ -15,7 +16,10 @@ using ld = long double;
 using Container = std::vector<ld>;
 
 auto readDataset(std::string const& path) -> Container {
-  std::fstream file(path);
+  std::fstream file(fmt::format("{}/{}", "data", path));
+  if (file.fail()) {
+    throw std::runtime_error("Failed to open file");
+  }
   Container res;
   ld x;
   while (file >> x) {
@@ -43,17 +47,28 @@ auto partialDerivative(auto const& function, Args&&... args) -> ld {
 
   el += kEpsilon;
 
-  auto val_h = std::apply(function, tup);
+  const auto val_h = std::apply(function, tup);
 
   return (val_h - val) / kEpsilon;
 }
 
+struct Quantity {
+  ld value_;
+  ld generalized_uncertainty_sq_;
+};
+
 struct Measurement {
-  Container measurements_;
   ld mean_;
   ld variance_;
   ld std_uncertainty_of_mean_sq_;
-  ld generalized_uncertainty_;
+  ld generalized_uncertainty_sq_;
+
+  explicit operator Quantity() const {
+    return Quantity{
+        mean_,
+        generalized_uncertainty_sq_,
+    };
+  }
 };
 
 auto calculateMean(Container const& measurements) -> ld {
@@ -74,14 +89,13 @@ auto calcualteGeneralizedUncertaintySq(ld std_uncertainty_of_mean_sq, ld uncerta
   return std_uncertainty_of_mean_sq + uncertainty_of_device * uncertainty_of_device / 3;
 }
 
-auto calculateMeasurement(Container measurements, ld uncertainty_of_device) -> Measurement {
+auto setupMeasurement(Container const& measurements, ld uncertainty_of_device) -> Measurement {
   auto mean = calculateMean(measurements);
   auto variance = calculateVariance(measurements, mean);
   auto std_uncertainty_of_mean_sq = calculateStdUncertaintyOfMeanSq(variance, measurements.size());
   auto generalized_uncertainty = calcualteGeneralizedUncertaintySq(std_uncertainty_of_mean_sq, uncertainty_of_device);
 
   return Measurement{
-      std::move(measurements),
       mean,
       variance,
       std_uncertainty_of_mean_sq,
@@ -89,14 +103,74 @@ auto calculateMeasurement(Container measurements, ld uncertainty_of_device) -> M
   };
 }
 
+namespace implementation {
+
+template <std::size_t I = 0, std::same_as<Quantity>... Quantities>
+auto addUncertainties(ld& uncertainties_combined, auto const& function, Quantities const&... quantities) -> void {
+  auto uncertainties = std::make_tuple(quantities.generalized_uncertainty_sq_...);
+  if constexpr (I < sizeof...(Quantities)) {
+    uncertainties_combined +=
+        std::pow(partialDerivative<I>(function, quantities.value_...), 2) * std::get<I>(uncertainties);
+    addUncertainties<I + 1>(uncertainties_combined, function, quantities...);
+  }
+}
+
+}  // namespace implementation
+
+template <std::same_as<Quantity>... Quantities>
+auto combineMeasurements(auto const& function, Quantities const&... quantities) -> Quantity {
+  auto values = std::make_tuple(quantities.value_...);
+
+  auto values_combined = std::apply(function, values);
+
+  auto uncertainties_combined_sq = ld{};
+
+  implementation::addUncertainties(uncertainties_combined_sq, function, quantities...);
+
+  return Quantity{
+      values_combined,
+      uncertainties_combined_sq,
+  };
+}
+
 }  // namespace uncertainty
 
-auto main() -> int {
+template <>
+struct fmt::formatter<uncertainty::Quantity> {
+  template <typename ParseContext>
+  constexpr auto parse(ParseContext& ctx) {
+    return ctx.begin();
+  }
+
+  template <typename FormatContext>
+  auto format(uncertainty::Quantity const& quantity, FormatContext& ctx) {
+    return format_to(
+        ctx.out(),
+        "value: {}, generalized uncertainty: {}",
+        quantity.value_,
+        std::sqrt(quantity.generalized_uncertainty_sq_));
+  }
+};
+
+auto main() -> int {  // NOLINT
+  using uncertainty::combineMeasurements;
+  using uncertainty::Measurement;
   using uncertainty::partialDerivative;
+  using uncertainty::Quantity;
+  using uncertainty::setupMeasurement;
   using utils::ld;
 
-  std::fstream file("data.txt");
-  auto res = partialDerivative<0>([](ld x, ld y) -> ld { return std::sin(x * y) + y; }, 0, 1);
+  auto a = static_cast<Quantity>(setupMeasurement(utils::readDataset("a.txt"), 0.01));
+  auto d = static_cast<Quantity>(setupMeasurement(utils::readDataset("d.txt"), 0.00002));
 
-  fmt::print("res: {}\n", res);
+  auto h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("h1.txt"), 0.01));
+
+  auto l1 = combineMeasurements([](ld a, ld h, ld d) { return a - h - d; }, a, h1, d);
+
+  auto tx1h1 = setupMeasurement(utils::readDataset("x1h1.txt"), 0.01);
+
+  fmt::print("a: {}\n", a);
+  fmt::print("h1: {}\n", h1);
+  fmt::print("d: {}\n", d);
+  fmt::print("l1: {}\n", l1);
 }
