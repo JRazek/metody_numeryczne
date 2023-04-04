@@ -2,6 +2,7 @@
 #include <fmt/printf.h>
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <concepts>
 #include <cstdint>
@@ -43,18 +44,20 @@ auto partialDerivative(auto const& function, Args&&... args) -> ld {
 
   constexpr auto kEpsilon = ld{1e-10};
 
+  el -= kEpsilon;
+
   const auto val = std::apply(function, tup);
 
-  el += kEpsilon;
+  el += 2 * kEpsilon;
 
   const auto val_h = std::apply(function, tup);
 
-  return (val_h - val) / kEpsilon;
+  return (val_h - val) / (2 * kEpsilon);
 }
 
 struct Quantity {
   ld value_;
-  ld generalized_uncertainty_sq_;
+  ld uncertainty_sq_;
 };
 
 struct Measurement {
@@ -77,29 +80,31 @@ auto calculateMean(Container const& measurements) -> ld {
 }
 
 auto calculateVariance(Container const& measurements, ld mean) -> ld {
+  assert(measurements.size() > 1);
   auto res = std::transform_reduce(measurements.begin(), measurements.end(), ld{}, std::plus<>{}, [mean](auto const x) {
-    return (x - mean) * (x - mean);
+    return std::pow(x - mean, 2);
   });
-  return res / measurements.size();
+  return res / (measurements.size() - 1);
 }
 
-auto calculateStdUncertaintyOfMeanSq(ld variance, std::uint64_t n) -> ld { return variance / (n + 1); }
+auto calculateStdUncertaintyOfMeanSq(ld variance, std::uint64_t n) -> ld { return variance / n; }
 
 auto calcualteGeneralizedUncertaintySq(ld std_uncertainty_of_mean_sq, ld uncertainty_of_device) -> ld {
-  return std_uncertainty_of_mean_sq + uncertainty_of_device * uncertainty_of_device / 3;
+  return std_uncertainty_of_mean_sq + std::pow(uncertainty_of_device, 2) / 3;
 }
 
 auto setupMeasurement(Container const& measurements, ld uncertainty_of_device) -> Measurement {
   auto mean = calculateMean(measurements);
   auto variance = calculateVariance(measurements, mean);
   auto std_uncertainty_of_mean_sq = calculateStdUncertaintyOfMeanSq(variance, measurements.size());
-  auto generalized_uncertainty = calcualteGeneralizedUncertaintySq(std_uncertainty_of_mean_sq, uncertainty_of_device);
+  auto generalized_uncertainty_sq =
+      calcualteGeneralizedUncertaintySq(std_uncertainty_of_mean_sq, uncertainty_of_device);
 
   return Measurement{
       mean,
       variance,
       std_uncertainty_of_mean_sq,
-      generalized_uncertainty,
+      generalized_uncertainty_sq,
   };
 }
 
@@ -107,10 +112,10 @@ namespace implementation {
 
 template <std::size_t I = 0, std::same_as<Quantity>... Quantities>
 auto addUncertainties(ld& uncertainties_combined, auto const& function, Quantities const&... quantities) -> void {
-  auto uncertainties = std::make_tuple(quantities.generalized_uncertainty_sq_...);
   if constexpr (I < sizeof...(Quantities)) {
+    auto uncertainties_sq = std::make_tuple(quantities.uncertainty_sq_...);
     uncertainties_combined +=
-        std::pow(partialDerivative<I>(function, quantities.value_...), 2) * std::get<I>(uncertainties);
+        std::pow(partialDerivative<I>(function, quantities.value_...), 2) * std::get<I>(uncertainties_sq);
     addUncertainties<I + 1>(uncertainties_combined, function, quantities...);
   }
 }
@@ -145,10 +150,7 @@ struct fmt::formatter<uncertainty::Quantity> {
   template <typename FormatContext>
   auto format(uncertainty::Quantity const& quantity, FormatContext& ctx) {
     return format_to(
-        ctx.out(),
-        "value: {}, generalized uncertainty: {}",
-        quantity.value_,
-        std::sqrt(quantity.generalized_uncertainty_sq_));
+        ctx.out(), "value: {:f}, generalized uncertainty: {:f}", quantity.value_, std::sqrt(quantity.uncertainty_sq_));
   }
 };
 
@@ -164,13 +166,19 @@ auto main() -> int {  // NOLINT
   auto d = static_cast<Quantity>(setupMeasurement(utils::readDataset("d.txt"), 0.00002));
 
   auto h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("h1.txt"), 0.01));
-
   auto l1 = combineMeasurements([](ld a, ld h, ld d) { return a - h - d; }, a, h1, d);
-
-  auto tx1h1 = setupMeasurement(utils::readDataset("x1h1.txt"), 0.01);
+  auto tx1h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x1h1.txt"), 0.01));
+  auto tx2h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x2h1.txt"), 0.01));
+  auto tx5h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x5h1.txt"), 0.01));
+  auto tx10h1 = static_cast<Quantity>(setupMeasurement(utils::readDataset("x10h1.txt"), 0.01));
 
   fmt::print("a: {}\n", a);
+  fmt::print("d: {}\n\n", d);
+
   fmt::print("h1: {}\n", h1);
-  fmt::print("d: {}\n", d);
   fmt::print("l1: {}\n", l1);
+  fmt::print("tx1h1: {}\n", tx1h1);
+  fmt::print("tx2h1: {}\n", tx2h1);
+  fmt::print("tx5h1: {}\n", tx5h1);
+  fmt::print("tx10h1: {}\n", tx10h1);
 }
