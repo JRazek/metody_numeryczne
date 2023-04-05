@@ -1,5 +1,7 @@
 sciplot_dep = dependency('sciplot')
 
+subdir('differential')
+
 subdir('integrals')
 
 subdir('interpolations')

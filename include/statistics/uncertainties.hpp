@@ -14,49 +14,30 @@
 #include <numeric>
 #include <vector>
 
-namespace utils {
-
-using ld = long double;
-using Container = std::vector<ld>;
-
-}  // namespace utils
+#include "differential/derivatives.hpp"
+#include "utils/concepts.hpp"
 
 namespace uncertainty {
 
-using utils::Container;
-using utils::ld;
+template <typename T>
+using Container = std::vector<T>;
 
-// N - # of variable to differentiate by in Args
-template <std::size_t N, std::convertible_to<ld>... Args>
-auto partialDerivative(auto const& function, Args&&... args) -> ld {
-  auto tup = std::make_tuple(static_cast<ld>(args)...);
-  auto& el = std::get<N>(tup);
+using concepts::FloatingPoint;
 
-  constexpr auto kEpsilon = ld{1e-10};
-
-  el -= kEpsilon;
-
-  const auto val = std::apply(function, tup);
-
-  el += 2 * kEpsilon;
-
-  const auto val_h = std::apply(function, tup);
-
-  return (val_h - val) / (2 * kEpsilon);
-}
-
+template <FloatingPoint T>
 struct Quantity {
-  ld value_;
-  ld uncertainty_sq_;
+  T value_;
+  T uncertainty_sq_;
 };
 
+template <FloatingPoint T>
 struct Measurement {
-  ld mean_;
-  ld variance_;
-  ld std_uncertainty_of_mean_sq_;
-  ld generalized_uncertainty_sq_;
+  T mean_;
+  T variance_;
+  T std_uncertainty_of_mean_sq_;
+  T generalized_uncertainty_sq_;
 
-  explicit operator Quantity() const {
+  explicit operator Quantity<T>() const {
     return Quantity{
         mean_,
         generalized_uncertainty_sq_,
@@ -64,26 +45,33 @@ struct Measurement {
   }
 };
 
-inline auto calculateMean(Container const& measurements) -> ld {
+template <FloatingPoint T>
+auto calculateMean(Container<T> const& measurements) -> T {
   auto res = std::reduce(measurements.begin(), measurements.end());
   return res / measurements.size();
 }
 
-inline auto calculateVariance(Container const& measurements, ld mean) -> ld {
+template <FloatingPoint T>
+auto calculateVariance(Container<T> const& measurements, T mean) -> T {
   assert(measurements.size() > 1);
-  auto res = std::transform_reduce(measurements.begin(), measurements.end(), ld{}, std::plus<>{}, [mean](auto const x) {
+  auto res = std::transform_reduce(measurements.begin(), measurements.end(), T{}, std::plus<>{}, [mean](auto const x) {
     return std::pow(x - mean, 2);
   });
   return res / (measurements.size() - 1);
 }
 
-inline auto calculateStdUncertaintyOfMeanSq(ld variance, std::uint64_t n) -> ld { return variance / n; }
+template <FloatingPoint T>
+auto calculateStdUncertaintyOfMeanSq(T variance, std::uint64_t n) -> T {
+  return variance / n;
+}
 
-inline auto calcualteGeneralizedUncertaintySq(ld std_uncertainty_of_mean_sq, ld uncertainty_of_device) -> ld {
+template <FloatingPoint T>
+auto calcualteGeneralizedUncertaintySq(T std_uncertainty_of_mean_sq, T uncertainty_of_device) -> T {
   return std_uncertainty_of_mean_sq + std::pow(uncertainty_of_device, 2) / 3;
 }
 
-inline auto setupMeasurement(Container const& measurements, ld uncertainty_of_device) -> Measurement {
+template <FloatingPoint T>
+auto setupMeasurement(Container<T> const& measurements, T uncertainty_of_device) -> Measurement<T> {
   auto mean = calculateMean(measurements);
   auto variance = calculateVariance(measurements, mean);
   auto std_uncertainty_of_mean_sq = calculateStdUncertaintyOfMeanSq(variance, measurements.size());
@@ -100,25 +88,25 @@ inline auto setupMeasurement(Container const& measurements, ld uncertainty_of_de
 
 namespace implementation {
 
-template <std::size_t I = 0, std::same_as<Quantity>... Quantities>
-auto addUncertainties(ld& uncertainties_combined, auto const& function, Quantities const&... quantities) -> void {
+template <std::size_t I = 0, FloatingPoint T, std::same_as<Quantity<T>>... Quantities>
+auto addUncertainties(T& uncertainties_combined, auto const& function, Quantities const&... quantities) -> void {
   if constexpr (I < sizeof...(Quantities)) {
     auto uncertainties_sq = std::make_tuple(quantities.uncertainty_sq_...);
     uncertainties_combined +=
-        std::pow(partialDerivative<I>(function, quantities.value_...), 2) * std::get<I>(uncertainties_sq);
+        std::pow(differential::partialDerivative<I>(function, quantities.value_...), 2) * std::get<I>(uncertainties_sq);
     addUncertainties<I + 1>(uncertainties_combined, function, quantities...);
   }
 }
 
 }  // namespace implementation
 
-template <std::same_as<Quantity>... Quantities>
-auto combineQuantities(auto const& function, Quantities const&... quantities) -> Quantity {
+template <FloatingPoint T, std::same_as<Quantity<T>>... Quantities>
+auto combineQuantities(auto const& function, Quantities const&... quantities) -> Quantity<T> {
   auto values = std::make_tuple(quantities.value_...);
 
   auto values_combined = std::apply(function, values);
 
-  auto uncertainties_combined_sq = ld{};
+  auto uncertainties_combined_sq = T{};
 
   implementation::addUncertainties(uncertainties_combined_sq, function, quantities...);
 
@@ -128,9 +116,10 @@ auto combineQuantities(auto const& function, Quantities const&... quantities) ->
   };
 }
 
-inline auto meanQuantity(std::vector<Quantity> const& quantities) -> Quantity {
-  auto mean = ld{};
-  auto combined_uncertainty_sq = ld{};
+template <FloatingPoint T>
+inline auto meanQuantity(Container<Quantity<T>> const& quantities) -> Quantity<T> {
+  auto mean = T{};
+  auto combined_uncertainty_sq = T{};
   for (auto const& [value, uncertainty_sq] : quantities) {
     mean += value;
     combined_uncertainty_sq += uncertainty_sq;
@@ -147,15 +136,15 @@ inline auto meanQuantity(std::vector<Quantity> const& quantities) -> Quantity {
 
 }  // namespace uncertainty
 
-template <>
-struct fmt::formatter<uncertainty::Measurement> {
+template <concepts::FloatingPoint T>
+struct fmt::formatter<uncertainty::Measurement<T>> {
   template <typename ParseContext>
   constexpr auto parse(ParseContext& ctx) {
     return ctx.begin();
   }
 
   template <typename FormatContext>
-  auto format(uncertainty::Measurement const& quantity, FormatContext& ctx) {
+  auto format(uncertainty::Measurement<T> const& quantity, FormatContext& ctx) {
     return format_to(
         ctx.out(),
         "mean: {:.3}, std_deviation: {:.3}, std_uncertainty_of_mean: {:.3}, generalized_uncertainty: {:.3}",
@@ -166,15 +155,15 @@ struct fmt::formatter<uncertainty::Measurement> {
   }
 };
 
-template <>
-struct fmt::formatter<uncertainty::Quantity> {
+template <concepts::FloatingPoint T>
+struct fmt::formatter<uncertainty::Quantity<T>> {
   template <typename ParseContext>
   constexpr auto parse(ParseContext& ctx) {
     return ctx.begin();
   }
 
   template <typename FormatContext>
-  auto format(uncertainty::Quantity const& quantity, FormatContext& ctx) {
+  auto format(uncertainty::Quantity<T> const& quantity, FormatContext& ctx) {
     return format_to(ctx.out(), "value: {:.3} \\pm {:.3}", quantity.value_, std::sqrt(quantity.uncertainty_sq_));
   }
 };

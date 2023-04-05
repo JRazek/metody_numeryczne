@@ -14,21 +14,24 @@ using sciplot::Figure;
 using sciplot::Plot2D;
 using sciplot::Strings;
 using sciplot::Vec;
+
 using uncertainty::combineQuantities;
-using uncertainty::meanQuantity;
-using uncertainty::Measurement;
-using uncertainty::Quantity;
 using uncertainty::setupMeasurement;
-using utils::ld;
+
 namespace rg = std::ranges;
+using ld = long double;
+
+using Measurement = uncertainty::Measurement<ld>;
+using Quantity = uncertainty::Quantity<ld>;
+using Container = uncertainty::Container<ld>;
 
 auto readDatasset(std::string const& path) -> std::vector<ld> { return utils::readDataset<ld>(path); }
 
-auto generateRange(ld low, ld high, ld increment) -> std::valarray<uncertainty::ld> {
+auto generateRange(ld low, ld high, ld increment) -> std::valarray<ld> {
   assert(high > low);
   auto n = static_cast<std::size_t>((high - low) / increment);
 
-  auto res = std::valarray<uncertainty::ld>(n);
+  auto res = std::valarray<ld>(n);
   for (auto i = 0u; i < n; i++) {
     res[i] = low + i * increment;
   }
@@ -36,7 +39,7 @@ auto generateRange(ld low, ld high, ld increment) -> std::valarray<uncertainty::
   return res;
 }
 
-auto drawDistribution(Plot2D& plot, utils::Container const& data, double resolution) {
+auto drawDistribution(Plot2D& plot, Container const& data, double resolution) {
   auto [min, max] = rg::minmax(data);
   std::map<std::int64_t, std::uint64_t> distribution;
 
@@ -132,7 +135,7 @@ auto handleMeasuredPeriods() -> void {
 
     auto transform_to_x1 = [n = period_multiple](ld t_x_n) -> ld { return t_x_n / n; };
 
-    auto x1_transformed = combineQuantities(transform_to_x1, period_quantity);
+    auto x1_transformed = combineQuantities<ld>(transform_to_x1, period_quantity);
 
     fmt::print("{}: {{ t_{}: {{ {} }}, t_1: {{ {} }} }}\n", name, period_multiple, period_measurement, x1_transformed);
   }
@@ -164,9 +167,9 @@ auto calculateExpectedPeriods() -> void {
 
   for (auto const& [height_id, measurement] : h_measurements) {
     auto h = static_cast<Quantity>(measurement);
-    auto l = combineQuantities([](ld a, ld h, ld d) { return a - h - d; }, a, h, d);
+    auto l = combineQuantities<ld>([](ld a, ld h, ld d) { return a - h - d; }, a, h, d);
 
-    auto t = combineQuantities([](ld l) { return 2 * std::numbers::pi * std::sqrt(l / kG); }, l);
+    auto t = combineQuantities<ld>([](ld l) { return 2 * std::numbers::pi * std::sqrt(l / kG); }, l);
 
     fmt::print("l: {}: {{ {} }}\n", l.value_, t);
   }
@@ -212,14 +215,14 @@ auto calculateGravity() -> void {
 
     auto transform_to_x1 = [n = period_multiple](ld t_x_n) -> ld { return t_x_n / n; };
 
-    auto tx1 = combineQuantities(transform_to_x1, period_quantity);
+    auto tx1 = combineQuantities<ld>(transform_to_x1, period_quantity);
 
     auto h = static_cast<Quantity>(h_measurement);
 
-    auto l = combineQuantities([](ld a, ld h, ld d) { return a - h - d; }, a, h, d);
+    auto l = combineQuantities<ld>([](ld a, ld h, ld d) { return a - h - d; }, a, h, d);
 
     auto g =
-        combineQuantities([](ld l, ld t) { return 4 * std::numbers::pi * std::numbers::pi * l / (t * t); }, l, tx1);
+        combineQuantities<ld>([](ld l, ld t) { return 4 * std::numbers::pi * std::numbers::pi * l / (t * t); }, l, tx1);
 
     fmt::print("g_{}: {{ {} }}\n", height_id, g);
   }
