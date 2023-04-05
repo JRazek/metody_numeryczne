@@ -90,16 +90,4 @@ enum class Method {
   return interpolated_values;
 }
 
-inline auto runWithMeasure(LagrangePolynomial const& pol, std::size_t drawing_resolution, Method method) {
-  auto start = std::chrono::high_resolution_clock::now();
-  auto res = generate(pol, drawing_resolution, method);
-
-  auto end = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-
-  fmt::print("Neville: {} us\n", duration.count());
-
-  return res;
-}
-
 }  // namespace interpolations

@@ -1,9 +1,20 @@
 #include "interpolations/lagrange_polynomial.hpp"
+using interpolations::LagrangePolynomial;
+using interpolations::Method;
+
+inline auto runWithMeasure(LagrangePolynomial const& pol, std::size_t drawing_resolution, Method method) {
+  auto start = std::chrono::high_resolution_clock::now();
+  auto res = generate(pol, drawing_resolution, method);
+
+  auto end = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+  fmt::print("Neville: {} us\n", duration.count());
+
+  return res;
+}
 
 auto main() -> int {
-  using interpolations::LagrangePolynomial;
-  using interpolations::Method;
-
   auto samples_count = std::size_t{};
   std::cin >> samples_count;
 
