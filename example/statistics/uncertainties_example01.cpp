@@ -6,7 +6,8 @@
 #include <sciplot/sciplot.hpp>
 #include <valarray>
 
-#include "uncertainties/uncertainties.hpp"
+#include "statistics/uncertainties.hpp"
+#include "utils/utils.hpp"
 
 using sciplot::Canvas;
 using sciplot::Figure;
@@ -20,6 +21,8 @@ using uncertainty::Quantity;
 using uncertainty::setupMeasurement;
 using utils::ld;
 namespace rg = std::ranges;
+
+auto readDatasset(std::string const& path) -> std::vector<ld> { return utils::readDataset<ld>(path); }
 
 auto generateRange(ld low, ld high, ld increment) -> std::valarray<uncertainty::ld> {
   assert(high > low);
@@ -68,7 +71,7 @@ auto drawDistribution(Plot2D& plot, utils::Container const& data, double resolut
 }
 
 auto draw(std::string const& dataset_name) -> void {
-  auto data = utils::readDataset(dataset_name);
+  auto data = readDatasset(dataset_name);
 
   auto plot = Plot2D();
   plot.legend().atTopLeft();
@@ -118,7 +121,7 @@ auto handleMeasuredPeriods() -> void {
 
   for (auto& [period_multiple, height_id, period_measurement] : periods_measurements) {
     auto name = generate_name(period_multiple, height_id);
-    auto dataset = utils::readDataset(name);
+    auto dataset = readDatasset(name);
     period_measurement = setupMeasurement(dataset, kTun);
   }
 
@@ -138,8 +141,8 @@ auto handleMeasuredPeriods() -> void {
 auto calculateExpectedPeriods() -> void {
   constexpr auto kG = 9.80665;
 
-  auto a = static_cast<Quantity>(setupMeasurement(utils::readDataset("a.txt"), kAun));
-  auto d = static_cast<Quantity>(setupMeasurement(utils::readDataset("d.txt"), kDun));
+  auto a = static_cast<Quantity>(setupMeasurement(readDatasset("a.txt"), kAun));
+  auto d = static_cast<Quantity>(setupMeasurement(readDatasset("d.txt"), kDun));
 
   using MeasurementTuple = std::tuple<std::size_t, Measurement>;
 
@@ -155,7 +158,7 @@ auto calculateExpectedPeriods() -> void {
 
   for (auto& [height_id, measurement] : h_measurements) {
     auto name = generate_name(height_id);
-    auto dataset = utils::readDataset(name);
+    auto dataset = readDatasset(name);
     measurement = setupMeasurement(dataset, kHun);
   }
 
@@ -193,12 +196,12 @@ auto calculateGravity() -> void {
 
   auto generate_name_h = [](std::size_t height_id) { return fmt::format("h{}.txt", height_id); };
 
-  auto a = static_cast<Quantity>(setupMeasurement(utils::readDataset("a.txt"), kAun));
-  auto d = static_cast<Quantity>(setupMeasurement(utils::readDataset("d.txt"), kDun));
+  auto a = static_cast<Quantity>(setupMeasurement(readDatasset("a.txt"), kAun));
+  auto d = static_cast<Quantity>(setupMeasurement(readDatasset("d.txt"), kDun));
 
   for (auto& [period_multiple, height_id, period_measurement, h_measurement] : periods_measurements) {
-    auto period_dataset = utils::readDataset(generate_name_period(period_multiple, height_id));
-    auto h_dataset = utils::readDataset(generate_name_h(height_id));
+    auto period_dataset = readDatasset(generate_name_period(period_multiple, height_id));
+    auto h_dataset = readDatasset(generate_name_h(height_id));
 
     period_measurement = setupMeasurement(period_dataset, kTun);
     h_measurement = setupMeasurement(h_dataset, kHun);
@@ -223,9 +226,8 @@ auto calculateGravity() -> void {
 }
 
 auto calculateLengths() -> void {
-  auto a = static_cast<Quantity>(setupMeasurement(utils::readDataset("a.txt"), kAun));
-  auto d = static_cast<Quantity>(setupMeasurement(utils::readDataset("d.txt"), kDun));
-
+  //  auto a = static_cast<Quantity>(setupMeasurement(readDataset("a.txt"), kAun));
+  //  auto d = static_cast<Quantity>(setupMeasurement(readDataset("d.txt"), kDun));
 }
 
 auto main() -> int {  // NOLINT

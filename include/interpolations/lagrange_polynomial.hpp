@@ -1,3 +1,5 @@
+#pragma once
+
 #include <fmt/printf.h>
 
 #include <algorithm>
@@ -12,6 +14,8 @@
 #include <vector>
 
 namespace rg = std::ranges;
+
+namespace interpolations {
 
 struct LagrangePolynomial {
   // param, value
@@ -28,9 +32,9 @@ struct LagrangePolynomial {
 
     auto merges = values.size();
 
-    for (auto i = 0; i < merges; i++) {
+    for (auto i = 0u; i < merges; i++) {
       CoeffVec tmp(samples_.size() - 1);
-      for (auto j = 0; j < values.size() - 1; j++) {
+      for (auto j = 0u; j < values.size() - 1; j++) {
         tmp[j] = ((t - samples_[j].first) * values[j + 1] - (t - samples_[j + 1].first) * values[j + 1]) /
                  (samples_[j + i + 1].first - samples_[j].first);
       }
@@ -97,3 +101,5 @@ inline auto runWithMeasure(LagrangePolynomial const& pol, std::size_t drawing_re
 
   return res;
 }
+
+}  // namespace interpolations

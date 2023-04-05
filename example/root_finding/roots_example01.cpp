@@ -3,7 +3,7 @@
 #include <cmath>
 #include <numbers>
 
-#include "roots/roots.hpp"
+#include "root_finding/roots.hpp"
 
 auto main() -> int {
   using std::numbers::pi;

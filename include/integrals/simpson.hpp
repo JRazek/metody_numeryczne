@@ -1,12 +1,13 @@
+#pragma once
+
 #include <concepts>
 #include <cstdint>
 #include <functional>
 
+#include "integrals/utils.hpp"
 #include "utils/utils.hpp"
 
-namespace simpson {
-
-using utils::Integral;
+namespace integrals {
 
 template <std::floating_point T>
 auto simpson(const Integral<T>& integral, std::size_t n) -> T {
@@ -29,4 +30,4 @@ auto simpson(const Integral<T>& integral, std::size_t n) -> T {
   return res * dx / 3;
 }
 
-}  // namespace simpson
+}  // namespace integrals

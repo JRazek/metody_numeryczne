@@ -1,10 +1,10 @@
-#include "newton_cotes/newton_cotes.hpp"
+#include "integrals/newton_cotes.hpp"
 
 // increase integral's precision by 2 in each iteration without repeating computations
 template <std::floating_point T>
-auto excercise(newton_cotes::Integral<T> integral, std::int64_t n) -> void {
-  using newton_cotes::Integral;
-  using newton_cotes::riemannIntegral;
+auto excercise(integrals::Integral<T> integral, std::int64_t n) -> void {
+  using integrals::Integral;
+  using integrals::riemannIntegral;
 
   // returns integral / delta - evaluations on boundary points
   auto a_0 = integral.low_;
@@ -29,9 +29,9 @@ auto excercise(newton_cotes::Integral<T> integral, std::int64_t n) -> void {
 }
 
 auto main() -> int {
-  using newton_cotes::Integral;
-  using newton_cotes::newtonCotes;
-  using newton_cotes::riemannIntegral;
+  using integrals::Integral;
+  using integrals::newtonCotes;
+  using integrals::riemannIntegral;
 
   using ld = long double;
 

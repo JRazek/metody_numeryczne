@@ -1,9 +1,12 @@
+#pragma once
+
 #include <cassert>
 #include <cstdint>
 
 #include "utils/utils.hpp"
 
 namespace roots {
+
 using utils::RealFunction;
 template <std::floating_point T>
 auto bisection(RealFunction<T> const& function, T low, T high, std::uint64_t n) -> T {

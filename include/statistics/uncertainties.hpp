@@ -1,3 +1,5 @@
+#pragma once
+
 #include <fmt/core.h>
 #include <fmt/format.h>
 #include <fmt/printf.h>
@@ -16,19 +18,6 @@ namespace utils {
 
 using ld = long double;
 using Container = std::vector<ld>;
-
-inline auto readDataset(std::string const& path) -> Container {
-  std::fstream file(fmt::format("{}/{}", "data", path));
-  if (file.fail()) {
-    throw std::runtime_error("Failed to open file");
-  }
-  Container res;
-  ld x;
-  while (file >> x) {
-    res.push_back(x);
-  }
-  return res;
-}
 
 }  // namespace utils
 

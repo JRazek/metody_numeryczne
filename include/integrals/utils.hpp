@@ -1,10 +1,13 @@
+#pragma once
+
 #include <concepts>
 #include <functional>
 
-namespace utils {
+#include "utils/utils.hpp"
 
-template <std::floating_point T>
-using RealFunction = std::function<T(T)>;
+namespace integrals {
+
+using utils::RealFunction;
 
 template <std::floating_point T>
 struct Integral {
@@ -13,4 +16,4 @@ struct Integral {
   RealFunction<T> function_{};
 };
 
-}  // namespace utils
+}  // namespace integrals

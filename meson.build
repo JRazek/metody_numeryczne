@@ -12,7 +12,7 @@ cpp_link_args=[
 ]
 
 incdir = include_directories(
-  'src/',
+  'include/',
 )
 
 if get_option('build')=='release'

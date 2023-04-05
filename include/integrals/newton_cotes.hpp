@@ -1,3 +1,5 @@
+#pragma once
+
 #include <fmt/core.h>
 
 #include <cmath>
@@ -5,11 +7,11 @@
 #include <cstdint>
 #include <functional>
 
+#include "integrals/utils.hpp"
 #include "utils/utils.hpp"
 
-namespace newton_cotes {
+namespace integrals {
 
-using utils::Integral;
 using utils::RealFunction;
 
 template <std::floating_point T>
@@ -41,4 +43,4 @@ template <std::floating_point T>
          dx * 0.5 * (transformed.function_(integral.low_) + transformed.function_(integral.high_));
 }
 
-}  // namespace newton_cotes
+}  // namespace integrals

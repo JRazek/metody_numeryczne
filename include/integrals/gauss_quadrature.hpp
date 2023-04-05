@@ -1,3 +1,5 @@
+#pragma once
+
 #include <fmt/printf.h>
 
 #include <array>
@@ -7,11 +9,11 @@
 #include <numbers>
 #include <vector>
 
+#include "integrals/utils.hpp"
 #include "utils/utils.hpp"
 
-namespace gauss_quadrature {
+namespace integrals {
 
-using utils::Integral;
 using utils::RealFunction;
 
 template <std::floating_point T>
@@ -81,7 +83,7 @@ auto gaussQuadrature(Integral<T> integral) -> T {
   return result;
 }
 
-}  // namespace gauss_quadrature
+}  // namespace integrals
 
 template <std::floating_point T>
 auto abs(T x) -> T {

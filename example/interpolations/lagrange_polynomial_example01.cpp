@@ -1,6 +1,9 @@
-#include "lagrange_polynomial/lagrange_polynomial.hpp"
+#include "interpolations/lagrange_polynomial.hpp"
 
 auto main() -> int {
+  using interpolations::LagrangePolynomial;
+  using interpolations::Method;
+
   auto samples_count = std::size_t{};
   std::cin >> samples_count;
 
