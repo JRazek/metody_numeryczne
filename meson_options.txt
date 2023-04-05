@@ -1,1 +1,2 @@
 option('build', type : 'string', value : 'debug', description : 'specifies build profile')
+option('build_examples', type : 'boolean', value : true, description : 'specifies whether to build examples')

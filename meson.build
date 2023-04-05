@@ -36,4 +36,6 @@ if host_machine.system() == 'linux'
 endif
 
 
-subdir('example')
+if get_option('build_examples')==true
+  subdir('example')
+endif
