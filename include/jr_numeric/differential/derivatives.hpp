@@ -6,7 +6,7 @@
 #include <tuple>
 #include <type_traits>
 
-#include "utils/concepts.hpp"
+#include "jr_numeric/utils/concepts.hpp"
 
 namespace differential {
 using concepts::FloatingPoint;

@@ -28,9 +28,9 @@ numeric_lib_dep = declare_dependency(include_directories: incdir, dependencies: 
 
 if host_machine.system() == 'linux'
   install_script = join_paths(meson.current_source_dir(), 'meson/install.sh')
-  include_path = join_paths(meson.current_source_dir(), 'include')
+  include_path = join_paths(meson.current_source_dir(), 'include/jr_numeric')
 
-  install_path = '/usr/local/include/jr_numeric'
+  install_path = '/usr/local/include/'
 
   meson.add_install_script(install_script, include_path, install_path)
 endif

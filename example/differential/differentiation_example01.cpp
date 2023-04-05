@@ -2,7 +2,7 @@
 
 #include <numbers>
 
-#include "differential/derivatives.hpp"
+#include "jr_numeric/differential/derivatives.hpp"
 
 auto main() -> int {
   using f = float;

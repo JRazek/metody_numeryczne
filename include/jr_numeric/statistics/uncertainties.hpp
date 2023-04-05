@@ -14,8 +14,8 @@
 #include <numeric>
 #include <vector>
 
-#include "differential/derivatives.hpp"
-#include "utils/concepts.hpp"
+#include "jr_numeric/differential/derivatives.hpp"
+#include "jr_numeric/utils/concepts.hpp"
 
 namespace uncertainty {
 

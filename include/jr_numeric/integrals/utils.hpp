@@ -3,7 +3,7 @@
 #include <concepts>
 #include <functional>
 
-#include "utils/utils.hpp"
+#include "jr_numeric/utils/utils.hpp"
 
 namespace integrals {
 

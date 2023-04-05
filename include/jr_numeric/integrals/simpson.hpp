@@ -4,8 +4,8 @@
 #include <cstdint>
 #include <functional>
 
-#include "integrals/utils.hpp"
-#include "utils/utils.hpp"
+#include "jr_numeric/integrals/utils.hpp"
+#include "jr_numeric/utils/utils.hpp"
 
 namespace integrals {
 

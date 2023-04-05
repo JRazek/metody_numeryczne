@@ -1,4 +1,4 @@
-#include "interpolations/lagrange_polynomial.hpp"
+#include "jr_numeric/interpolations/lagrange_polynomial.hpp"
 using interpolations::LagrangePolynomial;
 using interpolations::Method;
 

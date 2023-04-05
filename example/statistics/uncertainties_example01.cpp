@@ -6,8 +6,8 @@
 #include <sciplot/sciplot.hpp>
 #include <valarray>
 
-#include "statistics/uncertainties.hpp"
-#include "utils/utils.hpp"
+#include "jr_numeric/statistics/uncertainties.hpp"
+#include "jr_numeric/utils/utils.hpp"
 
 using sciplot::Canvas;
 using sciplot::Figure;

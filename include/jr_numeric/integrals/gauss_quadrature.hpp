@@ -9,8 +9,8 @@
 #include <numbers>
 #include <vector>
 
-#include "integrals/utils.hpp"
-#include "utils/utils.hpp"
+#include "jr_numeric/integrals/utils.hpp"
+#include "jr_numeric/utils/utils.hpp"
 
 namespace integrals {
 

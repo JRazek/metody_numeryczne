@@ -1,4 +1,4 @@
-#include "integrals/newton_cotes.hpp"
+#include "jr_numeric/integrals/newton_cotes.hpp"
 
 // increase integral's precision by 2 in each iteration without repeating computations
 template <std::floating_point T>

@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cstdint>
 
-#include "utils/utils.hpp"
+#include "jr_numeric/utils/utils.hpp"
 
 namespace roots {
 

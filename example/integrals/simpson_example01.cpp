@@ -3,7 +3,7 @@
 #include <cmath>
 #include <numbers>
 
-#include "integrals/simpson.hpp"
+#include "jr_numeric/integrals/simpson.hpp"
 
 auto main() -> int {
   integrals::Integral<double> integral{0.0, std::numbers::pi / 2, [](double x) { return std::cos(x); }};
