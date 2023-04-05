@@ -23,8 +23,7 @@ else
 endif
 
 fmt_dep = dependency('fmt', version: '>=9.0.0')
-sciplot_dep = dependency('sciplot')
 
-numeric_lib_dep = declare_dependency(include_directories: incdir, dependencies: [fmt_dep, sciplot_dep])
+numeric_lib_dep = declare_dependency(include_directories: incdir, dependencies: [fmt_dep])
 
 subdir('example')
