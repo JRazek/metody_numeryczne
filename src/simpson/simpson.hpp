@@ -2,17 +2,11 @@
 #include <cstdint>
 #include <functional>
 
+#include "utils/utils.hpp"
+
 namespace simpson {
 
-template <std::floating_point T>
-using RealFunction = std::function<T(T)>;
-
-template <std::floating_point T>
-struct Integral {
-  T low_{};
-  T high_{};
-  RealFunction<T> function_{};
-};
+using utils::Integral;
 
 template <std::floating_point T>
 auto simpson(const Integral<T>& integral, std::size_t n) -> T {

@@ -7,17 +7,12 @@
 #include <numbers>
 #include <vector>
 
+#include "utils/utils.hpp"
+
 namespace gauss_quadrature {
 
-template <std::floating_point T>
-using RealFunction = std::function<T(T)>;
-
-template <std::floating_point T>
-struct Integral {
-  T low_{};
-  T high_{};
-  RealFunction<T> function_{};
-};
+using utils::Integral;
+using utils::RealFunction;
 
 template <std::floating_point T>
 auto compose(RealFunction<T> a, RealFunction<T> b) -> RealFunction<T> {
