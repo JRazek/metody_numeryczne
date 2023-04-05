@@ -5,17 +5,12 @@
 #include <cstdint>
 #include <functional>
 
+#include "utils/utils.hpp"
+
 namespace newton_cotes {
 
-template <std::floating_point T>
-using RealFunction = std::function<T(T)>;
-
-template <std::floating_point T>
-struct Integral {
-  T low_{};
-  T high_{};
-  RealFunction<T> function_{};
-};
+using utils::Integral;
+using utils::RealFunction;
 
 template <std::floating_point T>
 [[nodiscard]] auto riemannSum(RealFunction<T> const& step_function, T low, T high, T step) -> T {
