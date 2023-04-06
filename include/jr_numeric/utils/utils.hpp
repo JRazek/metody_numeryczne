@@ -20,7 +20,7 @@ namespace jr_numeric::utils {
  */
 template <typename T>
 auto readDataset(std::string const& path) -> std::vector<T> {
-  std::fstream file(fmt::format("{}/{}", "data", path));
+  std::fstream file(path);
   if (file.fail()) {
     throw std::runtime_error("Failed to open file");
   }
