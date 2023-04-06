@@ -47,18 +47,17 @@ struct Measurement {
 };
 
 template <FloatingPoint T>
-auto calculateMean(Container<T> const& measurements) -> T {
-  auto res = std::reduce(measurements.begin(), measurements.end());
-  return res / measurements.size();
+auto calculateMean(Container<T> const& samples) -> T {
+  auto res = std::reduce(samples.begin(), samples.end());
+  return res / samples.size();
 }
 
 template <FloatingPoint T>
-auto calculateVariance(Container<T> const& measurements, T mean) -> T {
-  assert(measurements.size() > 1);
-  auto res = std::transform_reduce(measurements.begin(), measurements.end(), T{}, std::plus<>{}, [mean](auto const x) {
-    return std::pow(x - mean, 2);
-  });
-  return res / (measurements.size() - 1);
+auto calculateVariance(Container<T> const& samples, T mean) -> T {
+  assert(samples.size() > 1);
+  auto res = std::transform_reduce(
+      samples.begin(), samples.end(), T{}, std::plus<>{}, [mean](auto const x) { return std::pow(x - mean, 2); });
+  return res / (samples.size() - 1);
 }
 
 template <FloatingPoint T>
@@ -72,10 +71,10 @@ auto calcualteGeneralizedUncertaintySq(T std_uncertainty_of_mean_sq, T uncertain
 }
 
 template <FloatingPoint T>
-auto setupMeasurement(Container<T> const& measurements, T uncertainty_of_device) -> Measurement<T> {
-  auto mean = calculateMean(measurements);
-  auto variance = calculateVariance(measurements, mean);
-  auto std_uncertainty_of_mean_sq = calculateStdUncertaintyOfMeanSq(variance, measurements.size());
+auto setupMeasurement(Container<T> const& samples, T uncertainty_of_device) -> Measurement<T> {
+  auto mean = calculateMean(samples);
+  auto variance = calculateVariance(samples, mean);
+  auto std_uncertainty_of_mean_sq = calculateStdUncertaintyOfMeanSq(variance, samples.size());
   auto generalized_uncertainty_sq =
       calcualteGeneralizedUncertaintySq(std_uncertainty_of_mean_sq, uncertainty_of_device);
 
@@ -169,6 +168,10 @@ struct fmt::formatter<jr_numeric::uncertainty::Quantity<T>> {
 
   template <typename FormatContext>
   auto format(jr_numeric::uncertainty::Quantity<T> const& quantity, FormatContext& ctx) {
-    return format_to(ctx.out(), "value: {:.3} \\pm {:.3}", quantity.value_, std::sqrt(quantity.uncertainty_sq_));
+    return format_to(
+        ctx.out(),
+        "value: {:.3}, generalized_uncertainty: {:.3}",
+        quantity.value_,
+        std::sqrt(quantity.uncertainty_sq_));
   }
 };
