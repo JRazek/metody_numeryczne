@@ -1,11 +1,12 @@
 #include "jr_numeric/integrals/newton_cotes.hpp"
 
+using jr_numeric::integrals::Integral;
+using jr_numeric::integrals::newtonCotes;
+using jr_numeric::integrals::riemannIntegral;
+
 // increase integral's precision by 2 in each iteration without repeating computations
 template <std::floating_point T>
-auto excercise(integrals::Integral<T> integral, std::int64_t n) -> void {
-  using integrals::Integral;
-  using integrals::riemannIntegral;
-
+auto excercise(Integral<T> integral, std::int64_t n) -> void {
   // returns integral / delta - evaluations on boundary points
   auto a_0 = integral.low_;
   auto b_0 = integral.high_;
@@ -29,10 +30,6 @@ auto excercise(integrals::Integral<T> integral, std::int64_t n) -> void {
 }
 
 auto main() -> int {
-  using integrals::Integral;
-  using integrals::newtonCotes;
-  using integrals::riemannIntegral;
-
   using ld = long double;
 
   Integral<ld> integral{

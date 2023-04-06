@@ -17,7 +17,7 @@
 #include "jr_numeric/differential/derivatives.hpp"
 #include "jr_numeric/utils/concepts.hpp"
 
-namespace uncertainty {
+namespace jr_numeric::uncertainty {
 
 template <typename T>
 using Container = std::vector<T>;
@@ -134,17 +134,17 @@ inline auto meanQuantity(Container<Quantity<T>> const& quantities) -> Quantity<T
   };
 }
 
-}  // namespace uncertainty
+}  // namespace jr_numeric::uncertainty
 
-template <concepts::FloatingPoint T>
-struct fmt::formatter<uncertainty::Measurement<T>> {
+template <jr_numeric::concepts::FloatingPoint T>
+struct fmt::formatter<jr_numeric::uncertainty::Measurement<T>> {
   template <typename ParseContext>
   constexpr auto parse(ParseContext& ctx) {
     return ctx.begin();
   }
 
   template <typename FormatContext>
-  auto format(uncertainty::Measurement<T> const& quantity, FormatContext& ctx) {
+  auto format(jr_numeric::uncertainty::Measurement<T> const& quantity, FormatContext& ctx) {
     return format_to(
         ctx.out(),
         "mean: {:.3}, std_deviation: {:.3}, std_uncertainty_of_mean: {:.3}, generalized_uncertainty: {:.3}",
@@ -155,15 +155,15 @@ struct fmt::formatter<uncertainty::Measurement<T>> {
   }
 };
 
-template <concepts::FloatingPoint T>
-struct fmt::formatter<uncertainty::Quantity<T>> {
+template <jr_numeric::concepts::FloatingPoint T>
+struct fmt::formatter<jr_numeric::uncertainty::Quantity<T>> {
   template <typename ParseContext>
   constexpr auto parse(ParseContext& ctx) {
     return ctx.begin();
   }
 
   template <typename FormatContext>
-  auto format(uncertainty::Quantity<T> const& quantity, FormatContext& ctx) {
+  auto format(jr_numeric::uncertainty::Quantity<T> const& quantity, FormatContext& ctx) {
     return format_to(ctx.out(), "value: {:.3} \\pm {:.3}", quantity.value_, std::sqrt(quantity.uncertainty_sq_));
   }
 };

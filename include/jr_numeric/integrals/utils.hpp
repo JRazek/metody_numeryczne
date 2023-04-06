@@ -6,7 +6,7 @@
 #include "jr_numeric/utils/meta.hpp"
 #include "jr_numeric/utils/utils.hpp"
 
-namespace integrals {
+namespace jr_numeric::integrals {
 
 using concepts::R1RealFunction;
 using meta::IntegralFunctionResult;
@@ -27,4 +27,4 @@ Integral(A a, B b, C c) -> Integral<std::common_type_t<A, B>>;
 template <std::integral A, std::integral B, typename C>
 Integral(A a, B b, C c) -> Integral<double>;
 
-}  // namespace integrals
+}  // namespace jr_numeric::integrals

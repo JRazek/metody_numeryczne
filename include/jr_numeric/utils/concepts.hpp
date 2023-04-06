@@ -4,7 +4,7 @@
 #include <tuple>
 #include <type_traits>
 
-namespace concepts {
+namespace jr_numeric::concepts {
 
 namespace implementation {
 
@@ -102,4 +102,4 @@ concept Integral = requires(T integral) {
                      { integral.function_ } -> R1RealFunction;
                    };
 
-}  // namespace concepts
+}  // namespace jr_numeric::concepts

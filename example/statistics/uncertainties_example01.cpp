@@ -15,17 +15,17 @@ using sciplot::Plot2D;
 using sciplot::Strings;
 using sciplot::Vec;
 
-using uncertainty::combineQuantities;
-using uncertainty::setupMeasurement;
+using jr_numeric::uncertainty::combineQuantities;
+using jr_numeric::uncertainty::setupMeasurement;
 
 namespace rg = std::ranges;
 using ld = long double;
 
-using Measurement = uncertainty::Measurement<ld>;
-using Quantity = uncertainty::Quantity<ld>;
-using Container = uncertainty::Container<ld>;
+using Measurement = jr_numeric::uncertainty::Measurement<ld>;
+using Quantity = jr_numeric::uncertainty::Quantity<ld>;
+using Container = jr_numeric::uncertainty::Container<ld>;
 
-auto readDatasset(std::string const& path) -> std::vector<ld> { return utils::readDataset<ld>(path); }
+auto readDatasset(std::string const& path) -> std::vector<ld> { return jr_numeric::utils::readDataset<ld>(path); }
 
 auto generateRange(ld low, ld high, ld increment) -> std::valarray<ld> {
   assert(high > low);

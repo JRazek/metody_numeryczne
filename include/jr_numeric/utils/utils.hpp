@@ -9,7 +9,7 @@
 
 #include "jr_numeric/utils/concepts.hpp"
 
-namespace utils {
+namespace jr_numeric::utils {
 
 /**
  * @brief Reads a dataset from a file line by line
@@ -32,4 +32,4 @@ auto readDataset(std::string const& path) -> std::vector<T> {
   return res;
 }
 
-}  // namespace utils
+}  // namespace jr_numeric::utils

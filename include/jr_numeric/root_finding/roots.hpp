@@ -5,7 +5,7 @@
 
 #include "jr_numeric/utils/utils.hpp"
 
-namespace roots {
+namespace jr_numeric::roots {
 
 template <std::floating_point T>
 auto bisection(concepts::R1RealFunction auto const& function, T low, T high, std::uint64_t n) -> T {
@@ -29,4 +29,4 @@ auto bisection(concepts::R1RealFunction auto const& function, T low, T high, std
   return mid;
 }
 
-}  // namespace roots
+}  // namespace jr_numeric::roots

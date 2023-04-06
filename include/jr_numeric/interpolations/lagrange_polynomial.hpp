@@ -15,7 +15,7 @@
 
 namespace rg = std::ranges;
 
-namespace interpolations {
+namespace jr_numeric::interpolations {
 
 struct LagrangePolynomial {
   // param, value
@@ -90,4 +90,4 @@ enum class Method {
   return interpolated_values;
 }
 
-}  // namespace interpolations
+}  // namespace jr_numeric::interpolations

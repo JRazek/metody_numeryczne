@@ -8,7 +8,7 @@
 
 #include "jr_numeric/utils/concepts.hpp"
 
-namespace differential {
+namespace jr_numeric::differential {
 using concepts::FloatingPoint;
 using concepts::ScalarField;
 
@@ -44,4 +44,4 @@ auto partialDerivative(ScalarFieldType const& function, Args&&... args)
   return (val_h - val) / (2 * kEpsilon);
 }
 
-}  // namespace differential
+}  // namespace jr_numeric::differential

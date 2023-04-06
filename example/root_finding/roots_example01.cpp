@@ -6,8 +6,10 @@
 #include "jr_numeric/root_finding/roots.hpp"
 
 auto main() -> int {
+  using jr_numeric::roots::bisection;
   using std::numbers::pi;
-  auto res = roots::bisection<double>([](double x) { return std::sin(x); }, 2, 4, 100);
+
+  auto res = bisection<double>([](double x) { return std::sin(x); }, 2, 4, 100);
 
   fmt::print("Result: {}\n", res);
 }

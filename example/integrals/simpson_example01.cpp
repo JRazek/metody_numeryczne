@@ -8,9 +8,12 @@
 #include "jr_numeric/utils/concepts.hpp"
 
 auto main() -> int {
-  integrals::Integral integral{0.0, 0.0, [](double x) { return std::cos(x); }};
+  using jr_numeric::integrals::Integral;
+  using jr_numeric::integrals::simpson;
 
-  auto const res = integrals::simpson(integral, 1000);
+  Integral integral{0.0, 0.0, [](double x) { return std::cos(x); }};
+
+  auto const res = simpson(integral, 1000);
 
   fmt::print("Result: {}\n", res);
 }

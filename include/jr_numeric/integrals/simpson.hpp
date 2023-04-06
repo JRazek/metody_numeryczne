@@ -9,7 +9,7 @@
 #include "jr_numeric/utils/meta.hpp"
 #include "jr_numeric/utils/utils.hpp"
 
-namespace integrals {
+namespace jr_numeric::integrals {
 
 using concepts::R1RealFunction;
 
@@ -34,4 +34,4 @@ template <concepts::Integral IntegralType>
   return res * dx / 3;
 }
 
-}  // namespace integrals
+}  // namespace jr_numeric::integrals

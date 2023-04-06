@@ -14,7 +14,7 @@
 #include "jr_numeric/utils/meta.hpp"
 #include "jr_numeric/utils/utils.hpp"
 
-namespace integrals {
+namespace jr_numeric::integrals {
 
 template <std::floating_point T>
 auto compose(concepts::R1RealFunction auto a, concepts::R1RealFunction auto b) {
@@ -83,7 +83,7 @@ auto gaussQuadrature(IntegralType integral) -> IntegralFunctionResult<IntegralTy
   return result;
 }
 
-}  // namespace integrals
+}  // namespace jr_numeric::integrals
 
 template <std::floating_point T>
 auto abs(T x) -> T {

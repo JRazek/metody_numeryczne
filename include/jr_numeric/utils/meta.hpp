@@ -5,7 +5,7 @@
 
 #include "jr_numeric/utils/concepts.hpp"
 
-namespace meta {
+namespace jr_numeric::meta {
 
 template <
     concepts::R1RealFunction FunctionType,
@@ -17,4 +17,4 @@ template <
     concepts::FloatingPoint Param = concepts::implementation::NthFunctionParam<0, decltype(IntegralType::function_)>>
 using IntegralFunctionResult = RealFunctionResult<decltype(IntegralType::function_), Param>;
 
-}  // namespace meta
+}  // namespace jr_numeric::meta

@@ -11,7 +11,7 @@
 #include "jr_numeric/utils/concepts.hpp"
 #include "jr_numeric/utils/utils.hpp"
 
-namespace integrals {
+namespace jr_numeric::integrals {
 
 template <std::floating_point T>
 [[nodiscard]] auto riemannSum(concepts::R1RealFunction auto const& step_function, T low, T high, T step) -> T {
@@ -42,4 +42,4 @@ template <std::floating_point T>
          dx * 0.5 * (transformed.function_(integral.low_) + transformed.function_(integral.high_));
 }
 
-}  // namespace integrals
+}  // namespace jr_numeric::integrals

@@ -1,6 +1,7 @@
 #include "jr_numeric/interpolations/lagrange_polynomial.hpp"
-using interpolations::LagrangePolynomial;
-using interpolations::Method;
+
+using jr_numeric::interpolations::LagrangePolynomial;
+using jr_numeric::interpolations::Method;
 
 inline auto runWithMeasure(LagrangePolynomial const& pol, std::size_t drawing_resolution, Method method) {
   auto start = std::chrono::high_resolution_clock::now();
