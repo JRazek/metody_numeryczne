@@ -7,9 +7,9 @@
 
 namespace roots {
 
-using utils::RealFunction;
+using utils::R1RealFunction;
 template <std::floating_point T>
-auto bisection(RealFunction<T> const& function, T low, T high, std::uint64_t n) -> T {
+auto bisection(R1RealFunction<T> const& function, T low, T high, std::uint64_t n) -> T {
   assert(low < high);
   auto f_low = function(low);
   auto f_high = function(high);

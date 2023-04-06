@@ -10,6 +10,7 @@
 
 namespace differential {
 using concepts::FloatingPoint;
+using concepts::ScalarField;
 
 namespace implementation {
 
@@ -21,7 +22,7 @@ consteval auto differentiationEpsilon() -> T {
 }  // namespace implementation
 // N - # of variable to differentiate by in Args
 template <std::size_t N, FloatingPoint... Args, FloatingPoint T = std::common_type_t<Args...>>
-auto partialDerivative(auto const& function, Args&&... args) -> T {
+auto partialDerivative(ScalarField<sizeof...(Args)> auto const& function, Args&&... args) -> T {
   auto tup = std::make_tuple(static_cast<T>(args)...);
   auto& el = std::get<N>(tup);
 

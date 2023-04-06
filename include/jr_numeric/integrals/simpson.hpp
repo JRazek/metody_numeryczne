@@ -9,6 +9,8 @@
 
 namespace integrals {
 
+using utils::R1RealFunctionC;
+
 template <std::floating_point T>
 auto simpson(const Integral<T>& integral, std::size_t n) -> T {
   auto dx = (integral.high_ - integral.low_) / n;

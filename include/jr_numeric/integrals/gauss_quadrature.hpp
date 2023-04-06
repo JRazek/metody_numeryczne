@@ -14,21 +14,21 @@
 
 namespace integrals {
 
-using utils::RealFunction;
+using utils::R1RealFunction;
 
 template <std::floating_point T>
-auto compose(RealFunction<T> a, RealFunction<T> b) -> RealFunction<T> {
+auto compose(R1RealFunction<T> a, R1RealFunction<T> b) -> R1RealFunction<T> {
   return [a = std::move(a), b = std::move(b)](T x) { return a(b(x)); };
 }
 
 template <std::floating_point T>
-auto multiply(RealFunction<T> a, RealFunction<T> b) -> RealFunction<T> {
+auto multiply(R1RealFunction<T> a, R1RealFunction<T> b) -> R1RealFunction<T> {
   return [a = std::move(a), b = std::move(b)](T x) { return a(x) * b(x); };
 }
 
 // transform integration bounds from [a, b] to [new_low, new_high]
 template <std::floating_point T>
-auto transformIntegrationBounds(Integral<T> integral, T new_low, T new_high) -> RealFunction<T> {
+auto transformIntegrationBounds(Integral<T> integral, T new_low, T new_high) -> R1RealFunction<T> {
   auto c_0 = (integral.high_ - integral.low_) / (new_high - new_low);
   auto c_1 = integral.low_ - new_low * c_0;
 

@@ -7,10 +7,15 @@
 #include <functional>
 #include <string>
 
+#include "jr_numeric/utils/concepts.hpp"
+
 namespace utils {
 
 template <std::floating_point T>
-using RealFunction = std::function<T(T)>;
+using R1RealFunction = std::function<T(T)>;
+
+template <typename T>
+concept R1RealFunctionC = concepts::ScalarField<T, 1>;
 
 /**
  * @brief Reads a dataset from a file line by line

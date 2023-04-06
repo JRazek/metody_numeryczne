@@ -12,10 +12,10 @@
 
 namespace integrals {
 
-using utils::RealFunction;
+using utils::R1RealFunction;
 
 template <std::floating_point T>
-[[nodiscard]] auto riemannSum(RealFunction<T> const& step_function, T low, T high, T step) -> T {
+[[nodiscard]] auto riemannSum(R1RealFunction<T> const& step_function, T low, T high, T step) -> T {
   auto res = T{};
   const std::int64_t n = (high - low) / step;
 

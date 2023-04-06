@@ -9,7 +9,7 @@ auto main() -> int {
   using d = double;
   using ld = long double;
 
-  auto funciton = [](auto x, auto y) { return std::sin(x) + y; };
+  auto funciton = [](double x, double y) { return std::sin(x) + y; };
 
   auto res1 = differential::partialDerivative<0, f>(funciton, 2 * std::numbers::pi, 2.0);
 
