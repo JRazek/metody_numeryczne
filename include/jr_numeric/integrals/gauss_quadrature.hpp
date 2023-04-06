@@ -10,25 +10,25 @@
 #include <vector>
 
 #include "jr_numeric/integrals/utils.hpp"
+#include "jr_numeric/utils/concepts.hpp"
+#include "jr_numeric/utils/meta.hpp"
 #include "jr_numeric/utils/utils.hpp"
 
 namespace integrals {
 
-using utils::R1RealFunction;
-
 template <std::floating_point T>
-auto compose(R1RealFunction<T> a, R1RealFunction<T> b) -> R1RealFunction<T> {
+auto compose(concepts::R1RealFunction auto a, concepts::R1RealFunction auto b) {
   return [a = std::move(a), b = std::move(b)](T x) { return a(b(x)); };
 }
 
 template <std::floating_point T>
-auto multiply(R1RealFunction<T> a, R1RealFunction<T> b) -> R1RealFunction<T> {
+auto multiply(concepts::R1RealFunction auto a, concepts::R1RealFunction auto b) {
   return [a = std::move(a), b = std::move(b)](T x) { return a(x) * b(x); };
 }
 
 // transform integration bounds from [a, b] to [new_low, new_high]
 template <std::floating_point T>
-auto transformIntegrationBounds(Integral<T> integral, T new_low, T new_high) -> R1RealFunction<T> {
+auto transformIntegrationBounds(concepts::Integral auto integral, T new_low, T new_high) {
   auto c_0 = (integral.high_ - integral.low_) / (new_high - new_low);
   auto c_1 = integral.low_ - new_low * c_0;
 
@@ -68,11 +68,11 @@ consteval auto generateParams() {
   return results;
 }
 
-template <std::floating_point T>
-auto gaussQuadrature(Integral<T> integral) -> T {
+template <std::floating_point T, concepts::Integral IntegralType>
+auto gaussQuadrature(IntegralType integral) -> IntegralFunctionResult<IntegralType, T> {
   constexpr auto kParams = generateParams<T>();
 
-  auto result = 0.0;
+  auto result = IntegralFunctionResult<IntegralType, T>{};
 
   auto new_integral = transformIntegrationBounds<T>(std::move(integral), -1, 1);
 

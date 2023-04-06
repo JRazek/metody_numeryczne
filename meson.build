@@ -18,8 +18,8 @@ incdir = include_directories(
 if get_option('build')=='release'
     cpp_build_args += ['-O3', '-Wall', '-DNDEBUG', '-g0']
 else
-	cpp_build_args += ['-g3', '-Wall', '-O0', '-fsanitize=address']
-	cpp_link_args += ['-fsanitize=address', '-flto']
+    cpp_build_args += ['-g3', '-Wall', '-O0', '-fsanitize=address']
+    cpp_link_args += ['-fsanitize=address', '-flto']
 endif
 
 fmt_dep = dependency('fmt', version: '>=9.0.0')

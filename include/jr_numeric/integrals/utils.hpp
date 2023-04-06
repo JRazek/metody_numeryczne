@@ -3,25 +3,28 @@
 #include <concepts>
 #include <functional>
 
+#include "jr_numeric/utils/meta.hpp"
 #include "jr_numeric/utils/utils.hpp"
 
 namespace integrals {
 
-using utils::R1RealFunction;
-using utils::R1RealFunctionC;
+using concepts::R1RealFunction;
+using meta::IntegralFunctionResult;
+using meta::RealFunctionResult;
 
 template <std::floating_point T>
 struct Integral {
+  using R1RealFunction = std::function<T(T)>;
   T low_{};
   T high_{};
-  R1RealFunction<T> function_{};
+  R1RealFunction function_{};
 };
 
-template <typename T>
-concept IntegralC = requires(T integral) {
-                      { integral.low_ } -> std::floating_point;
-                      { integral.high_ } -> std::floating_point;
-                      { integral.function_ } -> R1RealFunctionC;
-                    };
+template <std::floating_point A, std::floating_point B, typename C>
+Integral(A a, B b, C c) -> Integral<std::common_type_t<A, B>>;
+
+// note - std::integral is about integer not calculus integral
+template <std::integral A, std::integral B, typename C>
+Integral(A a, B b, C c) -> Integral<double>;
 
 }  // namespace integrals

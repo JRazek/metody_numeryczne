@@ -8,14 +8,13 @@
 #include <functional>
 
 #include "jr_numeric/integrals/utils.hpp"
+#include "jr_numeric/utils/concepts.hpp"
 #include "jr_numeric/utils/utils.hpp"
 
 namespace integrals {
 
-using utils::R1RealFunction;
-
 template <std::floating_point T>
-[[nodiscard]] auto riemannSum(R1RealFunction<T> const& step_function, T low, T high, T step) -> T {
+[[nodiscard]] auto riemannSum(concepts::R1RealFunction auto const& step_function, T low, T high, T step) -> T {
   auto res = T{};
   const std::int64_t n = (high - low) / step;
 
@@ -27,12 +26,12 @@ template <std::floating_point T>
 }
 
 template <std::floating_point T>
-[[nodiscard]] auto riemannIntegral(Integral<T> const& integral, T dx) -> T {
+[[nodiscard]] auto riemannIntegral(concepts::Integral auto const& integral, T dx) -> T {
   return dx * riemannSum(integral.function_, integral.low_, integral.high_, dx);
 }
 
 template <std::floating_point T>
-[[nodiscard]] auto newtonCotes(Integral<T> integral, T dx) -> T {
+[[nodiscard]] auto newtonCotes(concepts::Integral auto integral, T dx) -> T {
   auto transformed = Integral<T>{
       .low_ = integral.low_ + dx,
       .high_ = integral.high_ - dx,

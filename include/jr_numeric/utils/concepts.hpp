@@ -15,7 +15,9 @@ template <typename T>
 concept HasCallableOperator = requires { &T::operator(); };
 
 template <typename Type>
-struct FunctionArgs : std::false_type {};
+struct FunctionArgs {
+  using args = void;
+};
 
 template <typename Ret, typename... Ts>
 struct FunctionArgs<Ret(Ts...)> {
@@ -43,18 +45,18 @@ struct FunctionArgs<Functor> {
   using args = typename FunctionArgs<decltype(&Functor::operator())>::args;
 };
 
-template <typename Type>
-using FunctionArgsT = typename FunctionArgs<Type>::args;
+template <typename Function>
+using FunctionArgsT = typename FunctionArgs<std::remove_cvref_t<Function>>::args;
 
 template <typename T>
-static constexpr auto kFunctionArgsCount = std::tuple_size_v<typename FunctionArgs<T>::args>;
+static constexpr auto kFunctionArgsCount = std::tuple_size_v<FunctionArgsT<std::remove_cvref_t<T>>>;
 
 template <typename T>
 static constexpr auto kArraySizeFromCallable =
     std::tuple_size_v<std::remove_cvref_t<std::tuple_element_t<0, typename FunctionArgs<T>::args>>>;
 
-template <typename T>
-using FirstFunctionParam = std::remove_cvref_t<std::tuple_element_t<0, typename FunctionArgs<T>::args>>;
+template <std::size_t N, typename T>
+using NthFunctionParam = std::remove_cvref_t<std::tuple_element_t<N, typename FunctionArgs<T>::args>>;
 
 template <typename T>
 constexpr bool kIsTuple = false;
@@ -89,5 +91,15 @@ template <typename Function, std::size_t N>
 concept ScalarField =
     AllFloatingPointTup<implementation::FunctionArgsT<Function>> && implementation::kFunctionArgsCount<Function> ==
 N;
+
+template <typename T>
+concept R1RealFunction = concepts::ScalarField<T, 1>;
+
+template <typename T>
+concept Integral = requires(T integral) {
+                     { integral.low_ } -> FloatingPoint;
+                     { integral.high_ } -> FloatingPoint;
+                     { integral.function_ } -> R1RealFunction;
+                   };
 
 }  // namespace concepts

@@ -21,8 +21,13 @@ consteval auto differentiationEpsilon() -> T {
 
 }  // namespace implementation
 // N - # of variable to differentiate by in Args
-template <std::size_t N, FloatingPoint... Args, FloatingPoint T = std::common_type_t<Args...>>
-auto partialDerivative(ScalarField<sizeof...(Args)> auto const& function, Args&&... args) -> T {
+template <
+    std::size_t N,
+    FloatingPoint... Args,
+    FloatingPoint T = std::common_type_t<Args...>,
+    ScalarField<sizeof...(Args)> ScalarFieldType>
+auto partialDerivative(ScalarFieldType const& function, Args&&... args)
+    -> std::invoke_result_t<ScalarFieldType, Args...> {
   auto tup = std::make_tuple(static_cast<T>(args)...);
   auto& el = std::get<N>(tup);
 

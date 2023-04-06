@@ -3,16 +3,18 @@
 #include <concepts>
 #include <cstdint>
 #include <functional>
+#include <type_traits>
 
 #include "jr_numeric/integrals/utils.hpp"
+#include "jr_numeric/utils/meta.hpp"
 #include "jr_numeric/utils/utils.hpp"
 
 namespace integrals {
 
-using utils::R1RealFunctionC;
+using concepts::R1RealFunction;
 
-template <std::floating_point T>
-auto simpson(const Integral<T>& integral, std::size_t n) -> T {
+template <concepts::Integral IntegralType>
+[[nodiscard]] auto simpson(IntegralType const& integral, std::size_t n) -> meta::IntegralFunctionResult<IntegralType> {
   auto dx = (integral.high_ - integral.low_) / n;
 
   auto const& function = integral.function_;

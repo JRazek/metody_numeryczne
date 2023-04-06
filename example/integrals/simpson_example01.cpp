@@ -4,10 +4,11 @@
 #include <numbers>
 
 #include "jr_numeric/integrals/simpson.hpp"
+#include "jr_numeric/integrals/utils.hpp"
 #include "jr_numeric/utils/concepts.hpp"
 
 auto main() -> int {
-  integrals::Integral<double> integral{0.0, std::numbers::pi / 2, [](double x) { return std::cos(x); }};
+  integrals::Integral integral{0.0, 0.0, [](double x) { return std::cos(x); }};
 
   auto const res = integrals::simpson(integral, 1000);
 
