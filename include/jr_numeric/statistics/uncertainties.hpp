@@ -23,6 +23,7 @@ template <typename T>
 using Container = std::vector<T>;
 
 using concepts::FloatingPoint;
+using concepts::ScalarField;
 
 template <FloatingPoint T>
 struct Quantity {
@@ -88,8 +89,12 @@ auto setupMeasurement(Container<T> const& measurements, T uncertainty_of_device)
 
 namespace implementation {
 
-template <std::size_t I = 0, FloatingPoint T, std::same_as<Quantity<T>>... Quantities>
-auto addUncertainties(T& uncertainties_combined, auto const& function, Quantities const&... quantities) -> void {
+template <
+    std::size_t I = 0,
+    FloatingPoint T,
+    std::same_as<Quantity<T>>... Quantities,
+    ScalarField<sizeof...(Quantities)> Function>
+auto addUncertainties(T& uncertainties_combined, Function const& function, Quantities const&... quantities) -> void {
   if constexpr (I < sizeof...(Quantities)) {
     auto uncertainties_sq = std::make_tuple(quantities.uncertainty_sq_...);
     uncertainties_combined +=
@@ -100,8 +105,8 @@ auto addUncertainties(T& uncertainties_combined, auto const& function, Quantitie
 
 }  // namespace implementation
 
-template <FloatingPoint T, std::same_as<Quantity<T>>... Quantities>
-auto combineQuantities(auto const& function, Quantities const&... quantities) -> Quantity<T> {
+template <FloatingPoint T, std::same_as<Quantity<T>>... Quantities, ScalarField<sizeof...(Quantities)> Function>
+auto combineQuantities(Function const& function, Quantities const&... quantities) -> Quantity<T> {
   auto values = std::make_tuple(quantities.value_...);
 
   auto values_combined = std::apply(function, values);
