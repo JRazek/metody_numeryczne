@@ -15,15 +15,15 @@ using sciplot::Plot2D;
 using sciplot::Strings;
 using sciplot::Vec;
 
-using jr_numeric::uncertainty::combineQuantities;
-using jr_numeric::uncertainty::setupMeasurement;
+using jr_numeric::statistics::combineQuantities;
+using jr_numeric::statistics::setupMeasurement;
 
 namespace rg = std::ranges;
 using ld = long double;
 
-using Measurement = jr_numeric::uncertainty::Measurement<ld>;
-using Quantity = jr_numeric::uncertainty::Quantity<ld>;
-using Container = jr_numeric::uncertainty::Container<ld>;
+using Measurement = jr_numeric::statistics::Measurement<ld>;
+using Quantity = jr_numeric::statistics::Quantity<ld>;
+using Container = jr_numeric::statistics::Container<ld>;
 
 auto readDatasset(std::string const& path) -> std::vector<ld> { return jr_numeric::utils::readDataset<ld>(path); }
 

@@ -17,7 +17,7 @@
 #include "jr_numeric/differential/derivatives.hpp"
 #include "jr_numeric/utils/concepts.hpp"
 
-namespace jr_numeric::uncertainty {
+namespace jr_numeric::statistics {
 
 template <typename T>
 using Container = std::vector<T>;
@@ -121,7 +121,7 @@ auto combineQuantities(Function const& function, Quantities const&... quantities
 }
 
 template <FloatingPoint T>
-inline auto meanQuantity(Container<Quantity<T>> const& quantities) -> Quantity<T> {
+auto meanQuantity(Container<Quantity<T>> const& quantities) -> Quantity<T> {
   auto mean = T{};
   auto combined_uncertainty_sq = T{};
   for (auto const& [value, uncertainty_sq] : quantities) {
@@ -138,17 +138,17 @@ inline auto meanQuantity(Container<Quantity<T>> const& quantities) -> Quantity<T
   };
 }
 
-}  // namespace jr_numeric::uncertainty
+}  // namespace jr_numeric::statistics
 
 template <jr_numeric::concepts::FloatingPoint T>
-struct fmt::formatter<jr_numeric::uncertainty::Measurement<T>> {
+struct fmt::formatter<jr_numeric::statistics::Measurement<T>> {
   template <typename ParseContext>
   constexpr auto parse(ParseContext& ctx) {
     return ctx.begin();
   }
 
   template <typename FormatContext>
-  auto format(jr_numeric::uncertainty::Measurement<T> const& quantity, FormatContext& ctx) {
+  auto format(jr_numeric::statistics::Measurement<T> const& quantity, FormatContext& ctx) {
     return format_to(
         ctx.out(),
         "mean: {:.3}, std_deviation: {:.3}, std_uncertainty_of_mean: {:.3}, generalized_uncertainty: {:.3}",
@@ -160,14 +160,14 @@ struct fmt::formatter<jr_numeric::uncertainty::Measurement<T>> {
 };
 
 template <jr_numeric::concepts::FloatingPoint T>
-struct fmt::formatter<jr_numeric::uncertainty::Quantity<T>> {
+struct fmt::formatter<jr_numeric::statistics::Quantity<T>> {
   template <typename ParseContext>
   constexpr auto parse(ParseContext& ctx) {
     return ctx.begin();
   }
 
   template <typename FormatContext>
-  auto format(jr_numeric::uncertainty::Quantity<T> const& quantity, FormatContext& ctx) {
+  auto format(jr_numeric::statistics::Quantity<T> const& quantity, FormatContext& ctx) {
     return format_to(
         ctx.out(),
         "value: {:.3}, generalized_uncertainty: {:.3}",
