@@ -23,7 +23,7 @@ using ld = long double;
 
 using Measurement = jr_numeric::statistics::Measurement<ld>;
 using Quantity = jr_numeric::statistics::Quantity<ld>;
-using Container = jr_numeric::statistics::Container<ld>;
+using Container = std::vector<ld>;
 
 auto readDatasset(std::string const& path) -> std::vector<ld> { return jr_numeric::utils::readDataset<ld>(path); }
 
@@ -70,10 +70,10 @@ auto drawDistribution(Plot2D& plot, Container const& data, double resolution) {
 
   x *= resolution;
 
-  return plot.drawBoxes(x, y).fillSolid().fillColor("green").fillIntensity(0.5).borderShow().labelNone();
+  plot.drawBoxes(x, y).fillSolid().fillColor("green").fillIntensity(0.5).borderShow().labelNone();
 }
 
-auto draw(std::string const& dataset_name) -> void {
+auto showRolls(std::string const& dataset_name) -> void {
   auto data = readDatasset(dataset_name);
 
   auto plot = Plot2D();

@@ -16,3 +16,4 @@ meson install -C build
 
 ## Dependencies
  - fmt
+ - sciplot [if -Dbuild_examples=true]

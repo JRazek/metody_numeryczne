@@ -1,6 +1,7 @@
 #pragma once
 
 #include <concepts>
+#include <ranges>
 #include <tuple>
 #include <type_traits>
 
@@ -101,5 +102,8 @@ concept Integral = requires(T integral) {
                      { integral.high_ } -> FloatingPoint;
                      { integral.function_ } -> R1RealFunction;
                    };
+
+template <typename Iter, typename Type = typename Iter::value_type>
+concept ReadOnlyRange = std::ranges::input_range<Iter>;
 
 }  // namespace jr_numeric::concepts
