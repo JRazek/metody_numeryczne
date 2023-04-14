@@ -73,6 +73,9 @@ concept Tuple = implementation::kIsTuple<std::remove_cvref_t<T>>;
 template <typename T>
 concept FloatingPoint = std::floating_point<std::remove_cvref_t<T>>;
 
+template <typename T>
+concept Integer = std::integral<std::remove_cvref_t<T>>;
+
 namespace implementation {
 
 template <typename T>
@@ -105,5 +108,8 @@ concept Integral = requires(T integral) {
 
 template <typename Iter, typename Type = typename Iter::value_type>
 concept ReadOnlyRange = std::ranges::input_range<Iter>;
+
+template <typename T>
+concept Number = FloatingPoint<T> || Integer<T>;
 
 }  // namespace jr_numeric::concepts
