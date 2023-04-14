@@ -10,6 +10,7 @@
 
 namespace jr_numeric::differential {
 using concepts::FloatingPoint;
+using concepts::R1RealFunction;
 using concepts::ScalarField;
 
 namespace implementation {
@@ -42,6 +43,21 @@ auto partialDerivative(ScalarFieldType const& function, Args&&... args)
   const auto val_h = std::apply(function, tup);
 
   return (val_h - val) / (2 * kEpsilon);
+}
+
+template <FloatingPoint T, R1RealFunction Function>
+auto derivative(Function const& function, T arg) -> std::invoke_result_t<Function, T> {
+  constexpr auto kEpsilon = implementation::differentiationEpsilon<T>();
+
+  arg -= kEpsilon;
+
+  const auto val_l = function(arg);
+
+  arg += 2 * kEpsilon;
+
+  const auto val_h = function(arg);
+
+  return (val_h - val_l) / (2 * kEpsilon);
 }
 
 }  // namespace jr_numeric::differential
