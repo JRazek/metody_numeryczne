@@ -2,6 +2,7 @@
 
 #include <fmt/core.h>
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <numeric>
@@ -34,6 +35,13 @@ struct Measurement {
         generalized_uncertainty_sq_,
     };
   }
+};
+
+template <FloatingPoint T>
+struct WeightedQuantity {
+  T value_;
+  T internal_uncertainty_sq_;
+  T external_uncertainty_sq_;
 };
 
 template <FloatingPoint T, ReadOnlyRange<T> Range>
@@ -102,6 +110,37 @@ auto meanQuantity(Range const& quantities) -> Quantity<T> {
   return Quantity{
       mean,
       combined_uncertainty_sq,
+  };
+}
+
+template <FloatingPoint T, ReadOnlyRange<Quantity<T>> Range>
+auto meanWeightedQuantity(Range const& quantities) -> WeightedQuantity<T> {
+  const auto x_w_nom =
+      std::reduce(quantities.begin(), quantities.end(), T{}, [](auto const& acc, auto const& quantity) {
+        return acc + quantity.value_ / quantity.uncertainty_sq_;
+      });
+
+  const auto x_w_denom =
+      std::reduce(quantities.begin(), quantities.end(), T{}, [](auto const& acc, auto const& quantity) {
+        return acc + 1 / quantity.uncertainty_sq_;
+      });
+
+  const auto x_w = x_w_nom / x_w_denom;
+
+  const auto internal_uncertainty_sq = 1 / x_w_denom;
+
+  const auto external_uncertainty_sq = std::reduce(
+                                           quantities.begin(),
+                                           quantities.end(),
+                                           T{},
+                                           [x_w](auto const& acc, auto const& quantity) {
+                                             return acc + std::pow(quantity.value_ - x_w, 2) / quantity.uncertainty_sq_;
+                                           }) *
+                                       internal_uncertainty_sq / (quantities.size() - 1);
+  return WeightedQuantity<T>{
+      .value_ = x_w,
+      .internal_uncertainty_sq_ = internal_uncertainty_sq,
+      .external_uncertainty_sq_ = external_uncertainty_sq,
   };
 }
 
