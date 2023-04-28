@@ -26,7 +26,11 @@ struct MatrixExtent {
 
 template <std::size_t N, std::size_t M, typename T>
 class Matrix {
-  std::array<std::array<T, M>, N> data_;
+ public:
+  using Row = std::array<T, M>;
+
+ private:
+  std::array<Row, N> data_;
 
  public:
   constexpr Matrix() noexcept : data_({}){};
@@ -353,16 +357,25 @@ constexpr static auto sortRows(Matrix<N, M, T>& mat, std::size_t start_row, std:
   rg::sort(rows, [col](auto const& row1, auto const& row2) { return std::abs(row1[col]) > std::abs(row2[col]); });
 }
 
+// extracts r1 multiplied by factor from r2 (starting from col)
+// if element is almost 0, it will be set to 0
 template <std::size_t N, std::size_t M, FloatingPoint T>
-constexpr static auto extractRow(Matrix<N, M, T>& mat, std::size_t row, std::size_t col = 0) noexcept -> void {
+constexpr static auto extractRow(
+    typename Matrix<N, M, T>::Row& r1, typename Matrix<N, M, T>::Row& r2, T factor, std::size_t col = 0) noexcept
+    -> void {
+  for (auto j = col; j < M; j++) {
+    r1[j] -= factor * r2[j];
+    if (equal(r2[j], 0.)) r2[j] = 0;
+  }
+}
+
+template <std::size_t N, std::size_t M, FloatingPoint T>
+constexpr static auto extractRowMatrix(Matrix<N, M, T>& mat, std::size_t row, std::size_t col = 0) noexcept -> void {
   for (auto i = row + 1; i < N; i++) {
     auto denom = mat[row][col];
     if (denom == 0) continue;
     auto factor = mat[i][col] / mat[row][col];
-    for (auto j = col; j < M; j++) {
-      mat[i][j] -= factor * mat[row][j];
-      if (equal(mat[i][j], 0.)) mat[i][j] = 0;
-    }
+    extractRow<N, M, T>(mat[i], mat[row], factor, col);
   }
 }
 
@@ -380,9 +393,25 @@ constexpr static auto rowEchelon(Matrix<N, M, T>& mat) noexcept -> void {
       j++;
       if (j == M) return;
     }
-    implementation::extractRow(mat, i, j);
+    implementation::extractRowMatrix(mat, i, j);
   }
   // assume
+}
+
+/**
+ * @param rowEcholon form matrix
+ */
+template <std::size_t N, std::size_t M, FloatingPoint T>
+constexpr static auto rowReduce(Matrix<N, M, T>& mat) noexcept -> void {
+  // TODO(jrazek)
+  for (auto i = 0u; i < N; i++) {
+    auto col = static_cast<std::int64_t>(M - 1 - i);
+    auto row = N - i - 1;
+
+    while (implementation::equal(mat[i][col], 0.) && col >= 0) {
+      col--;
+    }
+  }
 }
 
 /**
