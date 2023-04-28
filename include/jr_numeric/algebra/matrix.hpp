@@ -11,11 +11,21 @@
 #include <iterator>
 #include <numeric>
 
+#include "jr_numeric/utils/concepts.hpp"
+
 namespace jr_numeric::algebra {
+
+using concepts::FloatingPoint;
+
+namespace rg = std::ranges;
+
+struct MatrixExtent {
+  std::size_t rows_;
+  std::size_t cols_;
+};
 
 template <std::size_t N, std::size_t M, typename T>
 class Matrix {
- protected:
   std::array<std::array<T, M>, N> data_;
 
  public:
@@ -30,6 +40,12 @@ class Matrix {
       }
     }
   }
+
+  auto data() const noexcept -> std::array<std::array<T, M>, N> const& { return data_; }
+
+  auto cdata() const noexcept -> std::array<std::array<T, M>, N> const& { return data_; }
+
+  auto data() noexcept -> std::array<std::array<T, M>, N>& { return data_; }
 
   template <std::size_t X>
   constexpr auto operator*(Matrix<M, X, T> const& rhs) const noexcept -> Matrix<N, X, T> {
@@ -188,24 +204,6 @@ class Matrix {
   constexpr auto inverse() noexcept -> Matrix<N, M, T>& {}
 
  private:
-  /**
-   * @param mat matrix with sorted rows in non ascending order.
-   */
-  constexpr static inline auto rowEchelon(Matrix& mat) noexcept -> void {}
-
-  /**
-   * @param mat matrix with sorted rows in non ascending order.
-   */
-  constexpr static inline auto reducedRowEchelon(Matrix& mat) noexcept -> void {}
-
-  constexpr static inline auto addRows(std::array<T, M>& lhs, std::array<T, M> const& rhs) noexcept -> void {
-    for (auto i = 0; i < M; i++) lhs[i] += rhs[i];
-  }
-
-  constexpr static inline auto multiplyRow(std::array<T, M>& lhs, const T rhs) noexcept -> void {
-    for (auto i = 0; i < M; i++) lhs[i] *= rhs;
-  }
-
   template <std::size_t X>
   constexpr static inline auto multiply(Matrix const& lhs, Matrix<M, X, T> const& rhs, Matrix<N, X, T>& res) noexcept
       -> void {  // TODO (jrazek) implement Strassens
@@ -338,5 +336,68 @@ auto operator+(ReducedMatrix<N, M, T> const& lhs, ReducedMatrix<N, M, T> const& 
   }
   return res;
 }
+
+namespace implementation {
+
+template <FloatingPoint T>
+auto equal(T lhs, T rhs) noexcept -> bool {
+  return std::abs(lhs - rhs) < std::numeric_limits<T>::epsilon();
+}
+
+// sorts all rows by the value at the given column (descending order)
+// all the rows from start_row to N will be sorted
+template <std::size_t N, std::size_t M, FloatingPoint T>
+constexpr static auto sortRows(Matrix<N, M, T>& mat, std::size_t start_row, std::size_t col) noexcept -> void {
+  auto rows = std::span(mat.data()).last(N - start_row);
+
+  rg::sort(rows, [col](auto const& row1, auto const& row2) { return std::abs(row1[col]) > std::abs(row2[col]); });
+}
+
+template <std::size_t N, std::size_t M, FloatingPoint T>
+constexpr static auto extractRow(Matrix<N, M, T>& mat, std::size_t row, std::size_t col = 0) noexcept -> void {
+  for (auto i = row + 1; i < N; i++) {
+    auto denom = mat[row][col];
+    if (denom == 0) continue;
+    auto factor = mat[i][col] / mat[row][col];
+    for (auto j = col; j < M; j++) {
+      mat[i][j] -= factor * mat[row][j];
+      if (equal(mat[i][j], 0.)) mat[i][j] = 0;
+    }
+  }
+}
+
+}  // namespace implementation
+
+/**
+ * @param mat matrix with sorted rows in non ascending order.
+ */
+template <std::size_t N, std::size_t M, FloatingPoint T>
+constexpr static auto rowEchelon(Matrix<N, M, T>& mat) noexcept -> void {
+  auto j = 0;
+  for (auto i = 0u; i < N; i++) {
+    implementation::sortRows(mat, i, j);
+    while (implementation::equal(mat[i][j], 0.)) {
+      j++;
+      if (j == M) return;
+    }
+    implementation::extractRow(mat, i, j);
+  }
+  // assume
+}
+
+/**
+ * @param mat matrix with sorted rows in non ascending order.
+ */
+template <std::size_t N, std::size_t M, FloatingPoint T>
+constexpr static auto reducedRowEchelon(Matrix<N, M, T>& mat) noexcept -> void {}
+
+template <std::size_t N, std::size_t M, FloatingPoint T>
+constexpr static auto multiplyRow(std::array<T, M>& lhs, const T rhs) noexcept -> void {
+  for (auto i = 0; i < M; i++) lhs[i] *= rhs;
+}
+
+// unoptimized and unstable yet
+template <std::size_t N, std::size_t M, FloatingPoint T>
+auto gaussElimination(Matrix<N, M, T> matrix) {}
 
 }  // namespace jr_numeric::algebra
