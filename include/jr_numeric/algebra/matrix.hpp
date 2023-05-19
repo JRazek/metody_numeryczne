@@ -420,6 +420,36 @@ constexpr static auto rowReduce(Matrix<N, M, T>& mat) noexcept -> void {
 }
 
 /**
+ * @param augumented matrix - last col with solutions
+ */
+template <std::size_t N, std::size_t M, FloatingPoint T>
+constexpr static auto gaussWithCorrection(Matrix<N, M, T>& mat) noexcept -> std::array<T, N> {
+  auto tmp = mat;
+
+  auto extract_solutions = [](Matrix<N, M, T>& matrix) {
+    std::array<T, N> solutions;
+
+    for (auto i = 0; i < N; i++) {
+      for (auto j = 0; j < M; j++) {
+        if (!implementation::equal(matrix[i][j], T{})) {
+          solutions[i] = matrix[i][M - 1] / matrix[i][j];
+          break;
+        }
+      }
+    }
+
+    return solutions;
+  };
+
+  rowEchelon(mat);
+  rowReduce(mat);
+
+  auto solutions = extract_solutions(mat);
+
+  return solutions;
+}
+
+/**
  * @param mat matrix with sorted rows in non ascending order.
  */
 template <std::size_t N, std::size_t M, FloatingPoint T>
