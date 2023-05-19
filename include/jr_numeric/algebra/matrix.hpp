@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <bitset>
+#include <cassert>
 #include <cmath>
 #include <concepts>
 #include <cstdint>
@@ -404,12 +405,16 @@ constexpr static auto rowEchelon(Matrix<N, M, T>& mat) noexcept -> void {
 template <std::size_t N, std::size_t M, FloatingPoint T>
 constexpr static auto rowReduce(Matrix<N, M, T>& mat) noexcept -> void {
   // TODO(jrazek)
+
   for (auto i = 0u; i < N; i++) {
-    auto col = static_cast<std::int64_t>(M - 1 - i);
     auto row = N - i - 1;
 
-    while (implementation::equal(mat[i][col], 0.) && col >= 0) {
-      col--;
+    auto col = 0;
+    while (implementation::equal(mat[row][col], 0.)) col++;
+
+    for (auto r = 0u; r < row; r++) {
+      auto factor = mat[r][col] / mat[row][col];
+      implementation::extractRow<N, M, T>(mat[r], mat[row], factor, col);
     }
   }
 }
