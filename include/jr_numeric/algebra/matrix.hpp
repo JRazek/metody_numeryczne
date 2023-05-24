@@ -419,6 +419,24 @@ constexpr static auto rowReduce(Matrix<N, M, T>& mat) noexcept -> void {
   }
 }
 
+template <std::size_t N, std::size_t M, FloatingPoint T>
+constexpr static auto normalizeSolutions(Matrix<N, M, T>& matrix) noexcept -> void {
+  auto normalize_row = [&matrix](std::size_t row, T denom) {
+    for (auto j = 0; j < M; j++) {
+      matrix[row][j] /= denom;
+    }
+  };
+
+  for (auto i = 0; i < N; i++) {
+    for (auto j = 0; j < M; j++) {
+      if (!implementation::equal(matrix[i][j], T{})) {
+        normalize_row(i, matrix[i][j]);
+        break;
+      }
+    }
+  }
+}
+
 /**
  * @param augumented matrix - last col with solutions
  */
@@ -445,8 +463,37 @@ constexpr static auto gaussWithCorrection(Matrix<N, M, T>& mat) noexcept -> std:
   rowReduce(mat);
 
   auto solutions = extract_solutions(mat);
+  // TOOD
 
   return solutions;
+}
+
+template <std::size_t N, FloatingPoint T>
+constexpr static auto inverseMatrix(Matrix<N, N, T>& mat) noexcept -> void {
+  auto augumented = Matrix<N, 2 * N, T>{};
+
+  for (auto i = 0u; i < N; i++) {
+    for (auto j = 0u; j < N; j++) {
+      augumented[i][j] = mat[i][j];
+    }
+  }
+
+  for (auto i = 0u; i < N; i++) {
+    augumented[i][N + i] = 1;
+  }
+
+  rowEchelon(augumented);
+  rowReduce(augumented);
+
+  normalizeSolutions(augumented);
+
+  for (auto i = 0u; i < N; i++) {
+    for (auto j = 0u; j < N; j++) {
+      mat[i][j] = augumented[i][N + j];
+    }
+  }
+
+  std::cout<<"";
 }
 
 /**
